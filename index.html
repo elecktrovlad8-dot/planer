@@ -12,15 +12,10 @@
       theme: {
         extend: {
           colors: { 
-            background: 'var(--bg-color)', 
-            surface: 'var(--surface-color)', 
-            primary: 'var(--primary-color)', 
-            primaryHover: 'var(--primary-hover)',
-            accent: '#e9c46a',
-            glass: 'var(--glass-bg)',
-            glassBorder: 'var(--glass-border)',
-            textMain: 'var(--text-main)',
-            textMuted: 'var(--text-muted)'
+            background: 'var(--bg-color)', surface: 'var(--surface-color)', 
+            primary: 'var(--primary-color)', primaryHover: 'var(--primary-hover)',
+            glass: 'var(--glass-bg)', glassBorder: 'var(--glass-border)',
+            textMain: 'var(--text-main)', textMuted: 'var(--text-muted)'
           },
           fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
         }
@@ -32,14 +27,18 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
     :root {
-      --bg-color: #f1f3f1; --surface-color: #ffffff;
-      --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(255, 255, 255, 0.5);
-      --text-main: #1f2937; --text-muted: #6b7280;
-      --primary-color: #3e6034; --primary-hover: #2d4526;
+      --bg-color: #9fc792;
+      --surface-color: rgba(255, 255, 255, 0.55);
+      --glass-bg: rgba(255, 255, 255, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.8); 
+      --text-main: #1a2916;
+      --text-muted: #3a5231;        
+      --primary-color: #3e6034;
+      --primary-hover: #2b4523;
     }
 
     .dark {
-      --bg-color: #0d0f0d; --surface-color: #161916;
+      --bg-color: #0f120f; --surface-color: #161a16;
       --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08);
       --text-main: #f3f4f6; --text-muted: #9ca3af;
       --primary-color: #9fc792; --primary-hover: #8ab07d;
@@ -51,8 +50,9 @@
     }
     
     .glass-panel {
-      background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border); border-radius: 1.25rem;
+      background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border); border-radius: 1.25rem; 
+      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
     }
     
     ::-webkit-scrollbar { width: 6px; }
@@ -64,12 +64,13 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 
+  <!-- React & Framer Motion -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
 
-  <!-- Firebase SDK (Compat версии) -->
+  <!-- Firebase SDK (Compat верcии для работы без сборщика) -->
   <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
 </head>
@@ -81,7 +82,7 @@
     const { motion, AnimatePresence } = window.Motion;
 
     // ==========================================
-    // 🛠️ НАСТРОЙКИ FIREBASE (ЗАМЕНИ НА СВОИ!)
+    // 🛠️ НАСТРОЙКИ FIREBASE (ВСТАВЬ СВОИ КЛЮЧИ)
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyDz5wPBB05uU0q1vlQlgyGWmnyVwt3APk0",
@@ -95,26 +96,25 @@
     };
 
     // Проверяем, ввёл ли пользователь свои ключи
-    const isFirebaseConfigured = firebaseConfig.apiKey !== "API_KEY";
+    const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
     
     if (isFirebaseConfigured && !firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
-    
     const db = isFirebaseConfigured ? firebase.firestore() : null;
 
     // --- Утилиты ---
+    const generateId = () => Math.random().toString(36).substr(2, 9);
     const getTodayStr = () => {
-      const d = new Date();
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
     const getRelativeDateStr = (dateStr) => {
       if (!dateStr) return '';
       const today = new Date(getTodayStr()); const target = new Date(dateStr);
       const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
-      if (diffDays === 0) return 'Сегодня';
-      if (diffDays === 1) return 'Завтра';
-      if (diffDays === -1) return 'Вчера (Просрочено)';
+      if (diffDays === 0) return 'Сегодня'; if (diffDays === 1) return 'Завтра';
+      if (diffDays === 2) return 'Послезавтра'; if (diffDays === -1) return 'Вчера (Просрочено)';
+      if (diffDays < -1) return `Просрочено на ${Math.abs(diffDays)} дн.`;
       return target.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
     };
     const getStartOfWeek = (date) => {
@@ -124,323 +124,159 @@
     };
 
     const priorityScore = { urgent: 4, high: 3, normal: 2, low: 1 };
+    const priorityLabels = { urgent: 'Срочный 🔴', high: 'Высокий 🔥', normal: 'Обычный', low: 'Низкий' };
     const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
     const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
-    // --- Иконки ---
-    const IconHome = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-    const IconCalendar = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
-    const IconSettings = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
-    const IconPlus = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
-    const IconSun = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
-    const IconChevronRight = ({ className="" }) => <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>;
-    const IconCircle = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/></svg>;
-    const IconCheckCircle = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
-    const IconEdit = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
-    const IconTrash = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
-    const IconCloud = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
+    // --- Умный фильтр для Календаря ---
+    const getTasksForDate = (dateStr, tasks) => {
+       return tasks.filter(t => {
+          if (t.deadline !== dateStr) return false;
+          if (t.parentId) {
+             const parent = tasks.find(p => p.id === t.parentId);
+             if (parent && parent.deadline === dateStr) return false; 
+          }
+          return true;
+       });
+    };
 
-    // --- Стейт Менеджмент (УБРАН ЛОКАЛЬНЫЙ FALLBACK, ТОЛЬКО FIREBASE) ---
+    // --- Иконки ---
+    const IconHome = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+    const IconCalendar = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+    const IconSettings = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+    const IconChevronRight = ({ className = "" }) => <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>;
+    const IconCircle = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>;
+    const IconCheckCircle = ({ className = "" }) => <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
+    const IconTrash = ({ className = "" }) => <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+    const IconEdit = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+    const IconPlus = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+    const IconClock = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+    const IconX = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+    const IconSun = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
+    const IconCloud = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
+    const IconCloudOff = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 14h9"/><line x1="2" y1="2" x2="22" y2="22"/></svg>;
+
+    // --- Стейт Менеджмент (Локально + Firebase) ---
     const TaskContext = createContext();
 
     const AppProvider = ({ children }) => {
       const [tasks, setTasks] = useState([]);
       const [isLoading, setIsLoading] = useState(true);
       const [toasts, setToasts] = useState([]);
-      const [isDark, setIsDark] = useState(() => localStorage.getItem('studyflow-theme') === 'dark');
+      
+      const [isDark, setIsDark] = useState(() => {
+        const saved = localStorage.getItem('studyflow-theme-settings');
+        return saved ? saved === 'dark' : false;
+      });
 
-      // 1. ПОДПИСКА НА FIREBASE В РЕАЛЬНОМ ВРЕМЕНИ
+      // Загрузка данных
       useEffect(() => {
-        if (!db) {
-          setIsLoading(false); // Firebase не настроен, но загрузка "завершена" (задач 0)
-          return;
+        if (db) {
+          // Подписка на изменения из Firebase (Синхронизация в реальном времени)
+          const unsubscribe = db.collection('tasks').onSnapshot(snapshot => {
+            const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setTasks(fetched);
+            setIsLoading(false);
+          }, err => {
+            addToast('Ошибка синхронизации с Firebase', 'error');
+            setIsLoading(false);
+          });
+          return () => unsubscribe();
+        } else {
+          // Локальный режим
+          let localTasks = [];
+          for (let i = 10; i >= 1; i--) {
+            const saved = localStorage.getItem(`studyflow-tasks-v${i}`);
+            if (saved) { localTasks = JSON.parse(saved); break; }
+          }
+          if (localTasks.length === 0) {
+             const legacy = localStorage.getItem('studyflow-tasks');
+             if (legacy) localTasks = JSON.parse(legacy);
+          }
+          setTasks(localTasks);
+          setIsLoading(false);
         }
-
-        const unsubscribe = db.collection('tasks').onSnapshot(snapshot => {
-          const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          setTasks(fetchedTasks);
-          setIsLoading(false);
-        }, err => {
-          console.error("Firebase error:", err);
-          addToast('Ошибка загрузки Firebase. Сохранение отключено.', 'error');
-          setIsLoading(false);
-        });
-
-        // Отписка при размонтировании
-        return unsubscribe;
       }, []);
 
-      // 2. Тема
+      // Сохраняем в localStorage ТОЛЬКО если нет базы (резервная копия)
       useEffect(() => {
-        localStorage.setItem('studyflow-theme', isDark ? 'dark' : 'light');
+        if (!db && !isLoading) {
+          localStorage.setItem('studyflow-tasks-v7', JSON.stringify(tasks));
+        }
+      }, [tasks, isLoading]);
+
+      useEffect(() => {
+        localStorage.setItem('studyflow-theme-settings', isDark ? 'dark' : 'light');
         document.documentElement.classList.toggle('dark', isDark);
       }, [isDark]);
 
       const addToast = (message, type = 'success') => {
-        const id = Math.random().toString(36).substr(2, 9);
-        setToasts(prev => [...prev, { id, message, type }]);
+        const id = generateId(); setToasts(prev => [...prev, { id, message, type }]);
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
       };
 
-      // 3. CRUD (ТОЛЬКО ЧЕРЕЗ FIREBASE)
-      const toggleComplete = (id) => {
-        if (!db) return;
+      const toggleComplete = async (id) => {
         const task = tasks.find(t => t.id === id);
-        if (!task) return;
-        db.collection('tasks').doc(id).update({ status: task.status === 'completed' ? 'active' : 'completed' });
+        const newStatus = task.status === 'completed' ? 'active' : 'completed';
+        if (db) {
+           await db.collection('tasks').doc(id).update({ status: newStatus });
+        } else {
+           setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
+        }
       };
 
-      const saveTask = (task) => {
-        if (!db) {
-          addToast('Firebase не настроен. Сохранение невозможно.', 'error');
-          return;
-        }
+      const saveTask = async (task) => {
         if (task.id) {
-          db.collection('tasks').doc(task.id).update(task);
+          if (db) await db.collection('tasks').doc(task.id).update(task);
+          else setTasks(prev => prev.map(t => t.id === task.id ? { ...t, ...task } : t));
           addToast('Изменения сохранены');
         } else {
-          db.collection('tasks').add({ ...task, createdAt: getTodayStr(), status: 'active' });
+          const newTask = { ...task, createdAt: getTodayStr(), status: 'active' };
+          if (db) {
+            const docRef = db.collection('tasks').doc();
+            newTask.id = docRef.id;
+            await docRef.set(newTask);
+          } else {
+            newTask.id = generateId();
+            setTasks(prev => [...prev, newTask]);
+          }
           addToast('Задача добавлена');
         }
       };
 
-      const deleteTask = (id) => {
-        if (!db) return;
-        // Рекурсивно удаляем детей
+      const deleteTask = async (id) => {
         const getChildrenIds = (parentId, allTasks) => {
           const children = allTasks.filter(t => t.parentId === parentId);
           return children.reduce((acc, child) => [...acc, child.id, ...getChildrenIds(child.id, allTasks)], []);
         };
         const idsToRemove = [id, ...getChildrenIds(id, tasks)];
-        idsToRemove.forEach(tid => db.collection('tasks').doc(tid).delete());
+        
+        if (db) {
+          const batch = db.batch();
+          idsToRemove.forEach(tid => batch.delete(db.collection('tasks').doc(tid)));
+          await batch.commit();
+        } else {
+          setTasks(prev => prev.filter(t => !idsToRemove.includes(t.id)));
+        }
         addToast('Удалено', 'error');
       };
 
-      return (
-        <TaskContext.Provider value={{ tasks, setTasks, toggleComplete, saveTask, deleteTask, isDark, setIsDark, isLoading, toasts }}>
-          {children}
-        </TaskContext.Provider>
-      );
-    };
-
-    // --- Скелет ---
-    const Header = ({ title }) => {
-      const today = new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
-      return (
-        <header className="mb-6 flex items-center justify-between">
-          <div><h1 className="text-3xl font-bold text-textMain capitalize">{today}</h1><p className="text-textMuted">{title}</p></div>
-          <IconCloud className={isFirebaseConfigured ? "text-primary" : "text-textMuted"} />
-        </header>
-      );
-    };
-
-    const TaskModal = ({ isOpen, onClose, config }) => {
-      const { tasks, saveTask } = useContext(TaskContext);
-      const [formData, setFormData] = useState({ id: null, title: '', subject: '', description: '', deadline: '', priority: 'normal', color: '', parentId: '' });
-
-      useEffect(() => {
-        if (isOpen) {
-          setFormData(config ? { ...config, parentId: config.parentId || '' } : { id: null, title: '', subject: '', description: '', deadline: '', priority: 'normal', color: '', parentId: '' });
+      // Функция для импорта JSON в облако или локально
+      const importData = async (json) => {
+        if (db) {
+          const batch = db.batch();
+          json.forEach(t => batch.set(db.collection('tasks').doc(t.id || generateId()), t));
+          await batch.commit();
+          addToast('Данные загружены в облако!');
+        } else {
+          setTasks(json);
+          addToast('Данные успешно загружены!');
         }
-      }, [isOpen, config]);
-
-      if (!isOpen) return null;
-      const handleSubmit = (e) => { e.preventDefault(); saveTask(formData); onClose(); };
-
-      const parents = tasks.filter(t => t.id !== formData.id && t.parentId === null);
+      };
 
       return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="glass-panel w-full max-w-lg p-6 bg-surface shadow-xl">
-            <div className="flex justify-between items-center mb-6 border-b pb-4 border-glassBorder"><h2 className="text-xl font-bold text-textMain">{formData.id ? 'Редактировать' : 'Новое задание'}</h2><button onClick={onClose} className="p-1 rounded-full text-textMuted hover:bg-glassBorder">✕</button></div>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <input value={formData.title} onChange={e=>setFormData({...formData, title: e.target.value})} required className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-2.5 text-textMain outline-none focus:border-primary" placeholder="Название (например: Глава 3)" />
-              <input value={formData.subject} onChange={e=>setFormData({...formData, subject: e.target.value})} className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-2 text-textMain outline-none focus:border-primary" placeholder="Предмет" />
-              <textarea value={formData.description} onChange={e=>setFormData({...formData, description: e.target.value})} className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-2 text-textMain outline-none focus:border-primary h-20" placeholder="Краткое описание" />
-              <input type="date" value={formData.deadline} onChange={e=>setFormData({...formData, deadline: e.target.value})} className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-2 text-textMuted outline-none" />
-              <div className="grid grid-cols-2 gap-4">
-                <select value={formData.priority} onChange={e=>setFormData({...formData, priority: e.target.value})} className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-2 text-textMuted outline-none capitalize">
-                  {['low', 'normal', 'high', 'urgent'].map(p=><option key={p} value={p}>{p}</option>)}
-                </select>
-                <input type="color" value={formData.color} onChange={e=>setFormData({...formData, color: e.target.value})} className="h-10 w-full bg-surface cursor-pointer rounded-xl border border-glassBorder" />
-              </div>
-              <select value={formData.parentId} onChange={e=>setFormData({...formData, parentId: e.target.value})} className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-2 text-textMuted outline-none">
-                <option value="">Без родителя</option>
-                {parents.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}
-              </select>
-              <button type="submit" className="px-6 py-2.5 bg-primary hover:bg-primaryHover text-white font-semibold rounded-xl mt-4 active:scale-95 transition-all">Сохранить</button>
-            </form>
-          </motion.div>
-        </motion.div>
-      );
-    }
-
-    const TaskItem = ({ task }) => {
-      const { tasks, toggleComplete, deleteTask } = useContext(TaskContext);
-      const [showSubtasks, setShowSubtasks] = useState(false);
-      const [modalConfig, setModalConfig] = useState(null); 
-      
-      const children = tasks.filter(t => t.parentId === task.id);
-      const relativeDate = getRelativeDateStr(task.deadline);
-      const isOverdue = task.deadline && task.deadline < getTodayStr() && task.status !== 'completed';
-      
-      const subtaskCompleted = children.filter(c => c.status === 'completed').length;
-      const subtaskProgress = children.length > 0 ? Math.round((subtaskCompleted / children.length) * 100) : 0;
-
-      return (
-        <div className="bg-surface rounded-2xl p-4 border border-glassBorder mb-3 shadow-sm hover:border-primary/30 group">
-          <div className="flex items-start gap-3">
-            <button onClick={() => setShowSubtasks(!showSubtasks)} className="p-1 mt-1 rounded-md text-textMuted hover:bg-glassBorder">
-              {children.length > 0 && <IconChevronRight className={`transition-transform ${showSubtasks ? 'rotate-90' : ''}`} />}
-            </button>
-            <button onClick={() => toggleComplete(task.id)} className="text-primary hover:scale-110 active:scale-90 p-0.5 transition-all">
-              {task.status === 'completed' ? <IconCheckCircle /> : <IconCircle />}
-            </button>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`text-[17px] font-semibold break-words ${task.status === 'completed' ? 'line-through text-textMuted' : 'text-textMain'}`}>{task.title}</span>
-                {task.priority !== 'normal' && <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase opacity-80 ${task.priority === 'urgent' ? 'bg-red-500/10 text-red-500' : task.priority === 'high' ? 'bg-orange-500/10 text-orange-500' : 'bg-gray-500/10 text-gray-500'}`}>{task.priority}</span>}
-              </div>
-              <p className="text-sm text-textMuted line-clamp-2">{task.description}</p>
-              <div className="flex items-center gap-4 mt-3 text-sm text-textMuted flex-wrap">
-                {task.subject && <span className="bg-glassBorder px-2.5 py-0.5 rounded-full text-xs font-semibold">{task.subject}</span>}
-                {task.deadline && <span className={`flex gap-1.5 items-center ${isOverdue ? 'text-red-500' : ''}`}><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: task.color || '#ccc' }}></span>{relativeDate}</span>}
-                {children.length > 0 && <span className="flex items-center gap-1.5"><IconCheckCircle className="text-primary w-4 h-4"/>{subtaskProgress}% ({subtaskCompleted}/{children.length})</span>}
-              </div>
-            </div>
-            <div className="flex gap-1 group-hover:opacity-100 transition-opacity flex-shrink-0">
-               <button onClick={() => setModalConfig({ parentId: task.id, subject: task.subject, color: task.color })} className="p-1.5 rounded-lg text-textMuted hover:bg-glassBorder" title="Добавить подзадачу"><IconPlus /></button>
-               <button onClick={() => setModalConfig({ editTask: true, ...task })} className="p-1.5 rounded-lg text-textMuted hover:bg-glassBorder" title="Редактировать"><IconEdit /></button>
-               <button onClick={() => deleteTask(task.id)} className="p-1.5 rounded-lg text-red-500/80 hover:bg-red-500/10" title="Удалить"><IconTrash /></button>
-            </div>
-          </div>
-          <TaskModal isOpen={!!modalConfig} onClose={() => setModalConfig(null)} config={modalConfig} />
-
-          <AnimatePresence>
-            {showSubtasks && children.length > 0 && (
-              <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden mt-3 ml-7 pl-3 border-l-2 border-glassBorder flex flex-col gap-1">
-                {children.map(child => <TaskItem key={child.id} task={child} />)}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      );
-    };
-
-    // --- Разделы ---
-    const Dashboard = () => {
-      const { tasks, isLoading } = useContext(TaskContext);
-      if (isLoading) return null;
-      const allRootTasks = tasks.filter(t => t.parentId === null);
-      const activeTasks = allRootTasks.filter(t => t.status === 'active');
-      const completedTasks = allRootTasks.filter(t => t.status === 'completed');
-      
-      const totalRoot = allRootTasks.length;
-      const completedRoot = completedTasks.length;
-      const progress = totalRoot > 0 ? Math.round((completedRoot / totalRoot) * 100) : 0;
-
-      // Сортировка активных задач (приоритет -> дедлайн)
-      activeTasks.sort((a, b) => {
-        const priorityDiff = priorityScore[b.priority || 'normal'] - priorityScore[a.priority || 'normal'];
-        if (priorityDiff !== 0) return priorityDiff;
-        if (!a.deadline) return 1; if (!b.deadline) return -1;
-        return a.deadline.localeCompare(b.deadline);
-      });
-
-      return (
-        <div className="animate-fade-in">
-          <Header title="Study Plan" />
-          <section className="glass-panel p-6 mb-6">
-            <h2 className="text-xl font-bold mb-3 text-textMain">Общий прогресс за сегодня</h2>
-            <div className="w-full bg-glassBorder rounded-full h-4 overflow-hidden shadow-inner flex items-center gap-3">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} className="h-full bg-primary rounded-full relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/20 w-full h-full skew-x-12 translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>
-              </motion.div>
-              <span className="text-sm font-bold text-textMain tabular-nums">{progress}%</span>
-            </div>
-            <p className="text-sm text-textMuted mt-2">{completedRoot} из {totalRoot} заданий выполнено.</p>
-          </section>
-
-          <section className="glass-panel p-2">
-            <h3 className="text-sm font-bold text-textMuted uppercase px-4 py-2">Активные задания</h3>
-            <div className="p-2">
-              {activeTasks.length === 0 ? <p className="text-center text-textMuted py-10">Все цели достигнуты! 🥳</p> : activeTasks.map(t => <TaskItem key={t.id} task={t} />)}
-            </div>
-          </section>
-
-          {completedTasks.length > 0 && (
-            <section className="glass-panel p-2 mt-6 opacity-60">
-              <h3 className="text-sm font-bold text-textMuted uppercase px-4 py-2">Выполненные задания</h3>
-              <div className="p-2">{completedTasks.map(t => <TaskItem key={t.id} task={t} />)}</div>
-            </section>
-          )}
-        </div>
-      );
-    };
-
-    const CalendarView = () => (
-      <div className="animate-fade-in pb-20">
-        <Header title="Calendar" />
-        {/* Код календаря из v6 */}
-      </div>
-    );
-
-    const SettingsView = () => {
-      const { isDark, setIsDark } = useContext(TaskContext);
-      return (
-        <div className="animate-fade-in max-w-2xl pb-20"><Header title="Settings" />
-          <div className="glass-panel p-6 flex items-center justify-between">
-            <div><h3 className="font-semibold text-textMain text-lg">Оформление</h3><p className="text-textMuted text-sm mt-1">Переключение между светлой и темной темой.</p></div>
-            <button onClick={() => setIsDark(!isDark)} className="p-4 bg-surface rounded-2xl border border-glassBorder shadow-md hover:border-primary transition-colors text-textMain"><IconSun /></button>
-          </div>
-          <div className="glass-panel p-6 mt-6 flex flex-col gap-4">
-            <h3 className="font-semibold text-textMain text-lg flex items-center gap-2">Статус <IconCloud className={isFirebaseConfigured ? "text-primary" : "text-textMuted"}/></h3>
-            <p className="text-textMuted text-sm">
-              {isFirebaseConfigured ? '🟢 Подключен к Firebase Firestore. Все данные сохраняются в облаке.' : '🔴 Firebase не настроен. Данные не сохраняются.'}
-            </p>
-          </div>
-        </div>
-      );
-    };
-
-    // --- Скелет ---
-    const MainLayout = () => {
-      const [currentView, setCurrentView] = useState('dashboard');
-      const [modalConfig, setModalConfig] = useState(null); 
-      const { toasts } = useContext(TaskContext);
-      
-      const navItems = [ { id: 'dashboard', icon: IconHome, label: 'Задания' }, { id: 'calendar', icon: IconCalendar, label: 'Календарь' }, { id: 'settings', icon: IconSettings, label: 'Настройки' } ];
-
-      return (
-        <div className="flex h-screen w-full relative">
-          <aside className="hidden md:flex w-64 h-full border-r border-glassBorder bg-surface/50 flex-col p-6 z-10 shadow-lg">
-            <div className="flex items-center gap-3 mb-10 text-textMain"><div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center font-bold text-white text-xl shadow-lg">S</div><span className="text-xl font-bold tracking-wide">StudyFlow</span></div>
-            <nav className="flex flex-col gap-2">
-              {navItems.map(item => (
-                 <button key={item.id} onClick={() => setCurrentView(item.id)} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all w-full text-left font-medium ${currentView === item.id ? 'bg-primary text-white shadow-md' : 'text-textMuted hover:bg-glassBorder hover:text-textMain'}`}>
-                  <item.icon /> <span>{item.label}</span>
-                </button>
-              ))}
-            </nav>
-          </aside>
-
-          <nav className="md:hidden fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-xl border-t border-glassBorder flex justify-around items-center p-2 z-[90]">
-            {navItems.map(item => (
-              <button key={item.id} onClick={() => setCurrentView(item.id)} className={`flex flex-col items-center gap-1 p-2 w-20 rounded-xl transition-all ${currentView === item.id ? 'text-primary' : 'text-textMuted'}`}>
-                <item.icon /> <span className="text-[10px] font-bold">{item.label}</span>
-              </button>
-            ))}
-          </nav>
-
-          <main className="flex-1 h-full overflow-y-auto p-4 sm:p-8 relative no-scrollbar">
-            {currentView === 'dashboard' && <Dashboard />}
-            {currentView === 'calendar' && <CalendarView />}
-            {currentView === 'settings' && <SettingsView />}
-            <button onClick={() => setModalConfig({})} className="fixed bottom-24 md:bottom-8 right-6 md:right-8 bg-primary hover:bg-primaryHover text-white p-4 rounded-3xl active:scale-95 transition-all shadow-xl z-40"><IconPlus /></button>
-          </main>
-          
-          <TaskModal isOpen={!!modalConfig} onClose={() => setModalConfig(null)} config={modalConfig} />
-
+        <TaskContext.Provider value={{ tasks, toggleComplete, saveTask, deleteTask, importData, isDark, setIsDark, isLoading }}>
+          {children}
           <div className="fixed top-6 right-6 z-[200] flex flex-col gap-2">
             <AnimatePresence>
               {toasts.map(toast => (
@@ -452,21 +288,414 @@
               ))}
             </AnimatePresence>
           </div>
+        </TaskContext.Provider>
+      );
+    };
+
+    // --- Компонент задачи ---
+    const TaskItem = ({ task, level = 0, onOpenModal }) => {
+      const { tasks, toggleComplete, deleteTask } = useContext(TaskContext);
+      const [isExpanded, setIsExpanded] = useState(false);
+      
+      const children = tasks.filter(t => t.parentId === task.id);
+      const isCompleted = task.status === 'completed';
+      const progress = children.length > 0 ? Math.round((children.filter(c => c.status === 'completed').length / children.length) * 100) : null;
+      
+      const dateStatusStr = getRelativeDateStr(task.deadline);
+      const isOverdue = task.deadline && task.deadline < getTodayStr() && !isCompleted;
+
+      return (
+        <div className="w-full">
+          <div className={`group flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-glassBorder ${isCompleted ? 'opacity-60 grayscale' : 'opacity-100'}`}>
+            
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <button onClick={() => setIsExpanded(!isExpanded)} className={`p-1 mt-0.5 rounded-md hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${children.length === 0 ? 'invisible' : ''}`}>
+                <motion.div animate={{ rotate: isExpanded ? 90 : 0 }}><IconChevronRight className="text-textMuted" /></motion.div>
+              </button>
+              
+              <button onClick={() => toggleComplete(task.id)} className="text-primary hover:scale-110 transition-transform flex-shrink-0 mt-0.5">
+                {isCompleted ? <IconCheckCircle /> : <IconCircle />}
+              </button>
+              
+              <div className="flex-1 flex flex-col cursor-pointer min-w-0" onClick={() => setIsExpanded(!isExpanded)}>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-[15px] font-medium break-words ${isCompleted ? 'line-through text-textMuted' : 'text-textMain'}`}>{task.title}</span>
+                  {progress !== null && !isCompleted && <span className="text-xs bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded-full text-textMuted font-medium">{progress}%</span>}
+                  {!isCompleted && task.priority && task.priority !== 'normal' && <span className="text-xs font-bold text-red-500 opacity-90">{priorityLabels[task.priority]}</span>}
+                </div>
+                {task.description && <p className="text-xs text-textMuted mt-1 line-clamp-2">{task.description}</p>}
+                
+                <div className="flex gap-2 mt-1.5 text-xs text-textMuted items-center flex-wrap">
+                  {task.subject && <span className="bg-surface px-2 py-0.5 rounded-md border border-glassBorder font-medium">{task.subject}</span>}
+                  {task.deadline && (
+                    <span className={`flex items-center gap-1 bg-surface px-2 py-0.5 rounded-md border border-glassBorder font-medium ${isOverdue ? 'text-red-500 border-red-500/40 bg-red-500/10' : ''}`}>
+                      <IconClock /> {dateStatusStr}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 mt-3 sm:mt-0 ml-12 sm:ml-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+               <button onClick={() => onOpenModal({ parentId: task.id })} className="flex items-center gap-1 px-2 py-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-md text-textMuted hover:text-textMain transition-colors text-xs font-medium"><IconPlus /> Подзадача</button>
+               <button onClick={() => onOpenModal({ editTask: task })} className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-md text-textMuted hover:text-textMain transition-colors"><IconEdit /></button>
+               <button onClick={() => deleteTask(task.id)} className="p-1.5 hover:bg-red-500/20 rounded-md text-textMuted hover:text-red-600 transition-colors"><IconTrash /></button>
+               <div className="w-2.5 h-2.5 rounded-full shadow-sm ml-1 border border-glassBorder" style={{ backgroundColor: task.color || 'var(--primary-color)' }} />
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {isExpanded && children.length > 0 && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                <div className="ml-4 sm:ml-7 pl-2 border-l border-glassBorder flex flex-col gap-1 mt-1 mb-2">
+                  {children.map(child => <TaskItem key={child.id} task={child} level={level + 1} onOpenModal={onOpenModal} />)}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      );
+    };
+
+    // --- Универсальное Модальное окно ---
+    const TaskModal = ({ isOpen, onClose, config }) => {
+      const { tasks, saveTask, isDark } = useContext(TaskContext);
+      const [formData, setFormData] = useState({ id: null, title: '', subject: '', description: '', deadline: '', priority: 'normal', color: '', parentId: '' });
+
+      useEffect(() => {
+        if (isOpen) {
+          const defaultColor = isDark ? '#9fc792' : '#3e6034';
+          if (config.editTask) {
+            setFormData({ ...config.editTask, parentId: config.editTask.parentId || '' });
+          } else {
+            setFormData({ id: null, title: '', subject: '', description: '', deadline: config.date || '', priority: 'normal', color: defaultColor, parentId: config.parentId || '' });
+          }
+        }
+      }, [isOpen, config, isDark]);
+
+      if (!isOpen) return null;
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        saveTask({ ...formData, parentId: formData.parentId === '' ? null : formData.parentId });
+        onClose();
+      };
+      const possibleParents = tasks.filter(t => t.id !== formData.id && t.parentId === null);
+
+      return (
+        <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 dark:bg-black/70 backdrop-blur-md transition-opacity">
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} className="glass-panel w-full sm:max-w-lg p-6 bg-surface shadow-2xl rounded-t-3xl sm:rounded-2xl pb-10 sm:pb-6 max-h-[90vh] overflow-y-auto no-scrollbar border border-glassBorder">
+            <div className="w-12 h-1.5 bg-black/10 dark:bg-white/10 rounded-full mx-auto mb-6 sm:hidden"></div>
+            <h2 className="text-xl font-bold mb-5 text-textMain">{formData.id ? 'Редактировать' : 'Новое задание'}</h2>
+            
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <input value={formData.title} onChange={e=>setFormData({...formData, title: e.target.value})} required autoFocus className="w-full bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-primary font-medium shadow-sm" placeholder="Что нужно сделать?" />
+              <input value={formData.subject} onChange={e=>setFormData({...formData, subject: e.target.value})} className="w-full bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-primary text-sm shadow-sm" placeholder="Предмет или категория" />
+              <textarea value={formData.description} onChange={e=>setFormData({...formData, description: e.target.value})} rows="2" className="w-full bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-primary text-sm resize-none shadow-sm" placeholder="Подробное описание или ссылки..." />
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2 flex flex-col shadow-sm">
+                  <label className="text-[10px] uppercase text-textMuted font-bold">Дедлайн</label>
+                  <input type="date" value={formData.deadline} onChange={e=>setFormData({...formData, deadline: e.target.value})} className="w-full bg-transparent text-gray-900 dark:text-white outline-none text-sm cursor-pointer mt-1 font-medium" />
+                </div>
+                <div className="bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2 flex flex-col shadow-sm">
+                  <label className="text-[10px] uppercase text-textMuted font-bold">Приоритет</label>
+                  <select value={formData.priority} onChange={e=>setFormData({...formData, priority: e.target.value})} className="w-full bg-transparent text-gray-900 dark:text-white outline-none text-sm cursor-pointer mt-1 appearance-none font-medium">
+                    <option value="low">Низкий</option><option value="normal">Обычный</option><option value="high">Высокий 🔥</option><option value="urgent">Срочный 🔴</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2 flex flex-col justify-center shadow-sm">
+                   <label className="text-[10px] uppercase text-textMuted font-bold mb-1">Цвет метки</label>
+                   <input type="color" value={formData.color} onChange={e=>setFormData({...formData, color: e.target.value})} className="h-6 w-full bg-transparent cursor-pointer rounded border-none" />
+                </div>
+                <div className="bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2 flex flex-col shadow-sm">
+                  <label className="text-[10px] uppercase text-textMuted font-bold">Вложить в</label>
+                  <select value={formData.parentId} onChange={e=>setFormData({...formData, parentId: e.target.value})} className="w-full bg-transparent text-gray-900 dark:text-white outline-none text-sm cursor-pointer mt-1 appearance-none font-medium">
+                    <option value="">-</option>
+                    {possibleParents.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-3 mt-4">
+                <button type="button" onClick={onClose} className="px-5 py-2.5 text-textMuted hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">Отмена</button>
+                <button type="submit" className="px-6 py-2.5 bg-primary hover:bg-primaryHover text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-all active:scale-95">Сохранить</button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      );
+    };
+
+    // --- Разделы ---
+    const Dashboard = ({ onOpenModal }) => {
+      const { tasks, isLoading } = useContext(TaskContext);
+      
+      if (isLoading) return <div className="h-full flex items-center justify-center text-textMuted">Синхронизация...</div>;
+
+      const todayStr = getTodayStr();
+      const allRoot = tasks.filter(t => t.parentId === null);
+      const todayTasks = allRoot.filter(t => t.deadline === todayStr);
+      const todayCompleted = todayTasks.filter(t => t.status === 'completed').length;
+      
+      let progressToday = 100;
+      let progressText = '100% (Можно играть в SIMS 🎮)';
+      let subtitleText = 'На сегодня задач нет.';
+
+      if (todayTasks.length > 0) {
+        progressToday = Math.round((todayCompleted / todayTasks.length) * 100);
+        subtitleText = `Выполнено ${todayCompleted} из ${todayTasks.length} задач`;
+        progressText = progressToday === 100 ? '100% (Можно играть в SIMS 🎮)' : `${progressToday}%`;
+      }
+
+      const activeRoot = allRoot.filter(t => t.status === 'active').sort((a, b) => {
+        const scoreA = priorityScore[a.priority || 'normal']; const scoreB = priorityScore[b.priority || 'normal'];
+        if (scoreA !== scoreB) return scoreB - scoreA;
+        return (a.deadline || '9999-99-99').localeCompare(b.deadline || '9999-99-99');
+      });
+      const completedRoot = allRoot.filter(t => t.status === 'completed');
+
+      return (
+        <div className="animate-fade-in pb-32 sm:pb-10">
+          <header className="mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-textMain mb-3 tracking-tight">Ваш план</h1>
+            <div className="glass-panel p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 bg-surface/80 border-glassBorder">
+              <div><h3 className="font-semibold text-textMain text-lg">Прогресс за сегодня</h3><p className="text-sm text-textMuted mt-1">{subtitleText}</p></div>
+              <div className="w-full sm:w-1/2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <div className="flex-1 h-4 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden border border-glassBorder shadow-inner">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${progressToday}%` }} className="h-full bg-primary rounded-full relative overflow-hidden transition-all duration-500">
+                    <div className="absolute inset-0 bg-white/20 w-full h-full skew-x-12 translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>
+                  </motion.div>
+                </div>
+                <span className="text-sm font-bold text-primary">{progressText}</span>
+              </div>
+            </div>
+          </header>
+
+          <div className="glass-panel p-2 mb-6 bg-surface/50 border-glassBorder">
+            <div className="flex justify-between items-center p-4 mb-2 border-b border-glassBorder">
+              <h2 className="text-lg font-semibold text-textMain">Активные задания</h2>
+              <button onClick={() => onOpenModal({})} className="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-lg shadow-primary/20">+ Добавить</button>
+            </div>
+            <div className="p-2">
+              {activeRoot.length === 0 ? <div className="text-center text-textMuted py-10 font-medium">Все актуальные задачи выполнены! ✨</div> : activeRoot.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)}
+            </div>
+          </div>
+
+          {completedRoot.length > 0 && (
+            <div className="p-2"><h3 className="text-sm font-bold text-textMuted uppercase tracking-wider mb-3 pl-2">Выполненные</h3>
+              <div className="flex flex-col gap-1 opacity-60 hover:opacity-100 transition-opacity">
+                {completedRoot.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const CalendarView = ({ onOpenModal }) => {
+      const { tasks, isLoading } = useContext(TaskContext);
+      if (isLoading) return null;
+      const [viewMode, setViewMode] = useState('month'); 
+      const [currentMonth, setCurrentMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
+      const [currentWeek, setCurrentWeek] = useState(() => getStartOfWeek(new Date()));
+      const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+      let firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
+      firstDay = firstDay === 0 ? 6 : firstDay - 1;
+      
+      const nextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+      const prevMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+      const nextWeek = () => { const d = new Date(currentWeek); d.setDate(d.getDate() + 7); setCurrentWeek(d); };
+      const prevWeek = () => { const d = new Date(currentWeek); d.setDate(d.getDate() - 7); setCurrentWeek(d); };
+      
+      const weekDays = Array.from({length: 7}).map((_, i) => {
+        const d = new Date(currentWeek); d.setDate(d.getDate() + i);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      });
+
+      const weekTasks = [];
+      weekDays.forEach(d => weekTasks.push(...getTasksForDate(d, tasks)));
+      const weekProgress = weekTasks.length > 0 ? Math.round((weekTasks.filter(t => t.status === 'completed').length / weekTasks.length) * 100) : 100;
+
+      const titleMonth = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+      const titleWeek = `${new Date(weekDays[0]).getDate()} ${monthNames[new Date(weekDays[0]).getMonth()]} - ${new Date(weekDays[6]).getDate()} ${monthNames[new Date(weekDays[6]).getMonth()]}`;
+
+      return (
+        <div className="animate-fade-in pb-32 sm:pb-10 h-full flex flex-col">
+          <header className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+               <h1 className="text-2xl font-bold text-textMain">Календарь</h1>
+               <div className="flex bg-surface p-1 rounded-xl border border-glassBorder shadow-sm">
+                 <button onClick={() => setViewMode('month')} className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${viewMode === 'month' ? 'bg-primary text-white' : 'text-textMuted hover:text-textMain'}`}>Месяц</button>
+                 <button onClick={() => setViewMode('week')} className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${viewMode === 'week' ? 'bg-primary text-white' : 'text-textMuted hover:text-textMain'}`}>Неделя</button>
+               </div>
+            </div>
+            
+            <div className="flex items-center gap-2 bg-surface p-1.5 rounded-2xl border border-glassBorder shadow-sm w-full sm:w-auto justify-between sm:justify-start">
+              <button onClick={viewMode === 'month' ? prevMonth : prevWeek} className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors"><IconChevronRight className="rotate-180" /></button>
+              <span className="font-bold text-sm text-center text-textMain px-2 whitespace-nowrap">{viewMode === 'month' ? titleMonth : titleWeek}</span>
+              <button onClick={viewMode === 'month' ? nextMonth : nextWeek} className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors"><IconChevronRight /></button>
+            </div>
+          </header>
+
+          {viewMode === 'month' ? (
+            <div className="glass-panel flex-1 p-4 sm:p-6 flex flex-col bg-surface/50 border-glassBorder animate-fade-in">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-3 text-center text-[10px] sm:text-xs font-bold text-textMuted uppercase">
+                <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div className="text-red-500/80">Сб</div><div className="text-red-500/80">Вс</div>
+              </div>
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 flex-1 auto-rows-fr">
+                {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} className="rounded-2xl bg-black/5 dark:bg-white/5 opacity-30"></div>)}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                  const dayTasks = getTasksForDate(dateStr, tasks);
+                  const isToday = dateStr === getTodayStr();
+
+                  return (
+                    <div key={day} onClick={() => onOpenModal({ date: dateStr })} className={`p-1 sm:p-2 rounded-2xl border flex flex-col gap-1 cursor-pointer transition-colors ${isToday ? 'border-primary bg-primary/15 shadow-sm' : 'border-glassBorder bg-surface hover:border-primary/50 hover:bg-primary/5'}`}>
+                      <div className="flex justify-between items-center px-1">
+                        <span className={`text-xs sm:text-sm font-bold ${isToday ? 'text-primary' : 'text-textMain'}`}>{day}</span>
+                        {dayTasks.length > 0 && <span className="w-1.5 h-1.5 rounded-full bg-primary sm:hidden"></span>}
+                      </div>
+                      <div className="hidden sm:flex flex-col gap-1 overflow-y-auto no-scrollbar max-h-20 mt-1">
+                        {dayTasks.map(t => (
+                          <div key={t.id} className={`text-[10px] px-1.5 py-0.5 rounded-md flex items-center gap-1 truncate font-medium ${t.status === 'completed' ? 'opacity-50 line-through bg-black/5 dark:bg-white/5' : 'bg-primary/20 text-textMain border border-primary/20'}`}>
+                            {t.parentId && <span className="text-primary opacity-50 text-[8px] mr-0.5">└</span>} {t.title}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="glass-panel flex-1 p-4 sm:p-6 flex flex-col overflow-y-auto bg-surface/50 border-glassBorder animate-fade-in no-scrollbar">
+               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-6 p-4 bg-primary/10 rounded-2xl border border-primary/20">
+                 <span className="font-semibold text-textMain">Прогресс недели (Все задачи)</span>
+                 <div className="flex items-center gap-3 w-full sm:w-1/2">
+                    <div className="flex-1 h-3 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${weekProgress}%` }} className="h-full bg-primary rounded-full"></motion.div>
+                    </div>
+                    <span className="text-sm font-bold text-primary">{weekProgress}%</span>
+                 </div>
+               </div>
+
+               <div className="flex flex-col gap-4">
+                 {weekDays.map((dateStr, i) => {
+                    const dayTasks = getTasksForDate(dateStr, tasks);
+                    const isToday = dateStr === getTodayStr();
+                    const d = new Date(dateStr);
+                    
+                    return (
+                      <div key={dateStr} className={`p-4 rounded-2xl border ${isToday ? 'border-primary bg-primary/5 shadow-sm' : 'border-glassBorder bg-surface'} flex flex-col gap-3`}>
+                        <div className="flex justify-between items-center border-b border-glassBorder pb-2">
+                          <h3 className={`font-bold ${isToday ? 'text-primary' : 'text-textMain'}`}>{dayNames[i]}, <span className="font-medium text-textMuted text-sm">{d.getDate()} {monthNames[d.getMonth()]}</span></h3>
+                          <button onClick={() => onOpenModal({ date: dateStr })} className="text-primary bg-primary/10 hover:bg-primary hover:text-white p-1.5 rounded-lg transition-colors"><IconPlus /></button>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                           {dayTasks.length === 0 ? <p className="text-xs text-textMuted italic">Нет задач</p> : dayTasks.map(t => <TaskItem key={t.id} task={t} onOpenModal={onOpenModal} />)}
+                        </div>
+                      </div>
+                    )
+                 })}
+               </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const SettingsView = () => {
+      const { isDark, setIsDark, importData } = useContext(TaskContext);
+      const fileInputRef = useRef(null);
+
+      const handleImport = (e) => {
+        const file = e.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+             const json = JSON.parse(event.target.result);
+             if (Array.isArray(json)) importData(json);
+          } catch(e) { alert("Ошибка файла JSON"); }
+        };
+        reader.readAsText(file);
+      }
+
+      return (
+        <div className="animate-fade-in pb-32 sm:pb-10 max-w-2xl"><h1 className="text-2xl font-bold text-textMain mb-6">Настройки</h1><div className="glass-panel p-6 bg-surface/80 border-glassBorder flex flex-col gap-8">
+          
+          <div className="flex items-center justify-between border-b border-glassBorder pb-6">
+            <div><h3 className="font-bold text-textMain text-lg">Оформление</h3><p className="text-textMuted text-sm mt-1">Переключение между светлой и темной темой.</p></div>
+            <button onClick={() => setIsDark(!isDark)} className="p-4 bg-surface rounded-2xl border border-glassBorder shadow-md hover:border-primary hover:text-primary transition-colors text-textMain"><IconSun /></button>
+          </div>
+
+          <div className="border-b border-glassBorder pb-6">
+            <h3 className="font-bold text-textMain text-lg flex items-center gap-2">Синхронизация <IconCloud className={db ? "text-primary" : "text-textMuted"}/></h3>
+            <p className="text-textMuted text-sm mt-1 mb-3">
+              {db ? '🟢 Firebase подключен. Данные синхронизируются в реальном времени.' : '🔴 Локальный режим. Впишите ключи Firebase в код для синхронизации между устройствами.'}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold text-textMain text-lg">Импорт данных</h3>
+            <p className="text-textMuted text-sm mt-1 mb-3">Загрузите старый файл .json (Он автоматически будет отправлен в Firebase, если база подключена).</p>
+            <button onClick={() => fileInputRef.current.click()} className="px-4 py-2 bg-surface border border-glassBorder text-textMain rounded-xl text-sm font-medium hover:border-primary transition-colors">Выбрать JSON файл</button>
+            <input type="file" accept=".json" ref={fileInputRef} onChange={handleImport} className="hidden" />
+          </div>
+
+        </div></div>
+      );
+    }
+
+    // --- Скелет ---
+    const App = () => {
+      const [currentView, setCurrentView] = useState('dashboard');
+      const [modalConfig, setModalConfig] = useState(null); 
+      
+      const navItems = [
+        { id: 'dashboard', icon: IconHome, label: 'Главная' }, { id: 'calendar', icon: IconCalendar, label: 'Календарь' }, { id: 'settings', icon: IconSettings, label: 'Настройки' }
+      ];
+
+      return (
+        <div className="flex h-screen w-full relative">
+          <aside className="hidden md:flex w-64 h-full border-r border-glassBorder bg-surface/80 backdrop-blur-2xl flex-col p-6 z-10 shadow-2xl">
+            <div className="flex items-center gap-3 mb-10 text-textMain cursor-pointer" onClick={() => setCurrentView('dashboard')}>
+              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30"><span className="font-bold text-xl text-white">S</span></div>
+              <span className="text-xl font-bold tracking-wide">StudyFlow</span>
+            </div>
+            <nav className="flex flex-col gap-2">
+              {navItems.map(item => (
+                 <button key={item.id} onClick={() => setCurrentView(item.id)} className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all w-full text-left font-medium ${currentView === item.id ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-textMuted hover:bg-black/5 dark:hover:bg-white/5 hover:text-textMain'}`}>
+                  <item.icon /> <span>{item.label}</span>
+                </button>
+              ))}
+            </nav>
+          </aside>
+
+          <nav className="md:hidden fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-xl border-t border-glassBorder flex justify-around items-center p-2 z-[90] pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+            {navItems.map(item => (
+              <button key={item.id} onClick={() => setCurrentView(item.id)} className={`flex flex-col items-center gap-1 p-2 w-20 rounded-xl transition-all ${currentView === item.id ? 'text-primary' : 'text-textMuted'}`}>
+                <item.icon /> <span className="text-[10px] font-bold">{item.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          <main className="flex-1 h-full overflow-y-auto p-4 sm:p-8 relative no-scrollbar">
+            {currentView === 'dashboard' && <Dashboard onOpenModal={setModalConfig} />}
+            {currentView === 'calendar' && <CalendarView onOpenModal={setModalConfig} />}
+            {currentView === 'settings' && <SettingsView />}
+          </main>
+          
+          <TaskModal isOpen={!!modalConfig} onClose={() => setModalConfig(null)} config={modalConfig || {}} />
         </div>
       );
     }
 
-    const Root = () => <AppProvider><MainLayout /></AppProvider>;
+    const Root = () => <AppProvider><App /></AppProvider>;
     ReactDOM.createRoot(document.getElementById('root')).render(<Root />);
   </script>
-
-  <style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    @keyframes shimmer { 100% { transform: skewX(12deg) translateX(100%); } }
-    @keyframes fade-in { 0% { opacity: 0; transform: translateY(5px); } 100% { opacity: 1; transform: translateY(0); } }
-    .animate-shimmer_2s_infinite { animation: shimmer 2s infinite; }
-    .animate-fade-in { animation: fade-in 0.3s ease-out; }
-  </style>
 </body>
 </html>
