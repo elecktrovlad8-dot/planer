@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>StudyFlow - Premium Planner</title>
   
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -23,9 +24,14 @@
     }
   </script>
 
+  <!-- Firebase Compat Libraries -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
+    /* Тотально салатовая светлая тема */
     :root {
       --bg-color: #9fc792;
       --surface-color: rgba(255, 255, 255, 0.55);
@@ -37,16 +43,22 @@
       --primary-hover: #2b4523;
     }
 
+    /* Темная тема */
     .dark {
-      --bg-color: #0f120f; --surface-color: #161a16;
-      --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08);
-      --text-main: #f3f4f6; --text-muted: #9ca3af;
-      --primary-color: #9fc792; --primary-hover: #8ab07d;
+      --bg-color: #0f120f;
+      --surface-color: #161a16;
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary-color: #9fc792;
+      --primary-hover: #8ab07d;
     }
 
     body {
       background-color: var(--bg-color); color: var(--text-main);
-      margin: 0; overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease;
+      margin: 0; overflow: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     
     .glass-panel {
@@ -64,15 +76,10 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 
-  <!-- React & Framer Motion -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
-
-  <!-- Firebase SDK (Compat верcии для работы без сборщика) -->
-  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <div id="root"></div>
@@ -81,44 +88,45 @@
     const { useState, useEffect, useContext, createContext, useRef } = React;
     const { motion, AnimatePresence } = window.Motion;
 
-    // ==========================================
-    // 🛠️ НАСТРОЙКИ FIREBASE (ВСТАВЬ СВОИ КЛЮЧИ)
-    // ==========================================
+    // --- Firebase Инициализация ---
     const firebaseConfig = {
       apiKey: "AIzaSyDz5wPBB05uU0q1vlQlgyGWmnyVwt3APk0",
-      authDomain: "ourwishlist-b6bd7.firebaseapp.com",
-      databaseURL: "https://ourwishlist-b6bd7-default-rtdb.firebaseio.com",
-      projectId: "ourwishlist-b6bd7",
-      storageBucket: "ourwishlist-b6bd7.firebasestorage.app",
-      messagingSenderId: "170914082679",
-      appId: "1:170914082679:web:2bc01fc83713a230fe3b72",
-      measurementId: "G-LTX7TDL8KP"
+      authDomain: "ourwishlist-b6bd7.firebaseapp.com",
+      databaseURL: "https://ourwishlist-b6bd7-default-rtdb.firebaseio.com",
+      projectId: "ourwishlist-b6bd7",
+      storageBucket: "ourwishlist-b6bd7.firebasestorage.app",
+      messagingSenderId: "170914082679",
+      appId: "1:170914082679:web:2bc01fc83713a230fe3b72",
+      measurementId: "G-LTX7TDL8KP"
     };
 
-    // Проверяем, ввёл ли пользователь свои ключи
-    const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
-    
-    if (isFirebaseConfigured && !firebase.apps.length) {
+    if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
-    const db = isFirebaseConfigured ? firebase.firestore() : null;
+    const db = firebase.database();
 
     // --- Утилиты ---
     const generateId = () => Math.random().toString(36).substr(2, 9);
     const getTodayStr = () => {
       const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
+    
     const getRelativeDateStr = (dateStr) => {
       if (!dateStr) return '';
       const today = new Date(getTodayStr()); const target = new Date(dateStr);
       const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
-      if (diffDays === 0) return 'Сегодня'; if (diffDays === 1) return 'Завтра';
-      if (diffDays === 2) return 'Послезавтра'; if (diffDays === -1) return 'Вчера (Просрочено)';
+      
+      if (diffDays === 0) return 'Сегодня';
+      if (diffDays === 1) return 'Завтра';
+      if (diffDays === 2) return 'Послезавтра';
+      if (diffDays === -1) return 'Вчера (Просрочено)';
       if (diffDays < -1) return `Просрочено на ${Math.abs(diffDays)} дн.`;
       return target.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
     };
+
     const getStartOfWeek = (date) => {
-      const d = new Date(date); const day = d.getDay();
+      const d = new Date(date);
+      const day = d.getDay();
       const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
       return new Date(d.setDate(diff));
     };
@@ -127,18 +135,6 @@
     const priorityLabels = { urgent: 'Срочный 🔴', high: 'Высокий 🔥', normal: 'Обычный', low: 'Низкий' };
     const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
     const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-
-    // --- Умный фильтр для Календаря ---
-    const getTasksForDate = (dateStr, tasks) => {
-       return tasks.filter(t => {
-          if (t.deadline !== dateStr) return false;
-          if (t.parentId) {
-             const parent = tasks.find(p => p.id === t.parentId);
-             if (parent && parent.deadline === dateStr) return false; 
-          }
-          return true;
-       });
-    };
 
     // --- Иконки ---
     const IconHome = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
@@ -153,57 +149,51 @@
     const IconClock = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
     const IconX = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
     const IconSun = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
-    const IconCloud = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
-    const IconCloudOff = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 14h9"/><line x1="2" y1="2" x2="22" y2="22"/></svg>;
+    const IconCloud = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
 
-    // --- Стейт Менеджмент (Локально + Firebase) ---
+    // --- Стейт Менеджмент (Синхронизация Firebase + LocalStorage Backup) ---
     const TaskContext = createContext();
 
     const AppProvider = ({ children }) => {
-      const [tasks, setTasks] = useState([]);
-      const [isLoading, setIsLoading] = useState(true);
+      // Изначально загружаем из LocalStorage для мгновенного отображения интерфейса
+      const [tasks, setTasks] = useState(() => {
+        const saved = localStorage.getItem('studyflow-tasks-v6');
+        return saved ? JSON.parse(saved) : [];
+      });
       const [toasts, setToasts] = useState([]);
+      const [isSyncing, setIsSyncing] = useState(true);
       
       const [isDark, setIsDark] = useState(() => {
         const saved = localStorage.getItem('studyflow-theme-settings');
-        return saved ? saved === 'dark' : false;
+        return saved ? saved === 'dark' : false; 
       });
 
-      // Загрузка данных
+      // Синхронизация с Firebase (Слушатель)
       useEffect(() => {
-        if (db) {
-          // Подписка на изменения из Firebase (Синхронизация в реальном времени)
-          const unsubscribe = db.collection('tasks').onSnapshot(snapshot => {
-            const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setTasks(fetched);
-            setIsLoading(false);
-          }, err => {
-            addToast('Ошибка синхронизации с Firebase', 'error');
-            setIsLoading(false);
-          });
-          return () => unsubscribe();
-        } else {
-          // Локальный режим
-          let localTasks = [];
-          for (let i = 10; i >= 1; i--) {
-            const saved = localStorage.getItem(`studyflow-tasks-v${i}`);
-            if (saved) { localTasks = JSON.parse(saved); break; }
+        const tasksRef = db.ref('tasks');
+        
+        // Миграция старых данных в Firebase (если база пустая)
+        tasksRef.once('value').then(snapshot => {
+          if (!snapshot.exists()) {
+            const local = localStorage.getItem('studyflow-tasks-v6') || localStorage.getItem('studyflow-tasks-v5');
+            if (local && JSON.parse(local).length > 0) {
+              syncToFirebase(JSON.parse(local));
+              addToast('Ваши локальные задачи загружены в облако!', 'success');
+            }
           }
-          if (localTasks.length === 0) {
-             const legacy = localStorage.getItem('studyflow-tasks');
-             if (legacy) localTasks = JSON.parse(legacy);
-          }
-          setTasks(localTasks);
-          setIsLoading(false);
-        }
-      }, []);
+        });
 
-      // Сохраняем в localStorage ТОЛЬКО если нет базы (резервная копия)
-      useEffect(() => {
-        if (!db && !isLoading) {
-          localStorage.setItem('studyflow-tasks-v7', JSON.stringify(tasks));
-        }
-      }, [tasks, isLoading]);
+        // Слушаем изменения в реальном времени
+        tasksRef.on('value', (snapshot) => {
+          const data = snapshot.val();
+          const loadedTasks = data ? Object.values(data) : [];
+          setTasks(loadedTasks);
+          localStorage.setItem('studyflow-tasks-v6', JSON.stringify(loadedTasks)); // Локальный бэкап
+          setIsSyncing(false);
+        });
+
+        return () => tasksRef.off();
+      }, []);
 
       useEffect(() => {
         localStorage.setItem('studyflow-theme-settings', isDark ? 'dark' : 'light');
@@ -215,67 +205,47 @@
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
       };
 
-      const toggleComplete = async (id) => {
-        const task = tasks.find(t => t.id === id);
-        const newStatus = task.status === 'completed' ? 'active' : 'completed';
-        if (db) {
-           await db.collection('tasks').doc(id).update({ status: newStatus });
-        } else {
-           setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
-        }
+      // Функция записи в Firebase
+      const syncToFirebase = (newTasksArray) => {
+        setTasks(newTasksArray); // Мгновенное обновление (Optimistic UI)
+        const tasksObj = {};
+        newTasksArray.forEach(t => tasksObj[t.id] = t);
+        db.ref('tasks').set(tasksObj).catch(err => {
+           addToast('Ошибка синхронизации', 'error');
+           console.error(err);
+        });
       };
 
-      const saveTask = async (task) => {
+      const toggleComplete = (id) => {
+        const newTasks = tasks.map(t => t.id === id ? { ...t, status: t.status === 'completed' ? 'active' : 'completed' } : t);
+        syncToFirebase(newTasks);
+      };
+
+      const saveTask = (task) => {
         if (task.id) {
-          if (db) await db.collection('tasks').doc(task.id).update(task);
-          else setTasks(prev => prev.map(t => t.id === task.id ? { ...t, ...task } : t));
+          const newTasks = tasks.map(t => t.id === task.id ? { ...t, ...task } : t);
+          syncToFirebase(newTasks);
           addToast('Изменения сохранены');
         } else {
-          const newTask = { ...task, createdAt: getTodayStr(), status: 'active' };
-          if (db) {
-            const docRef = db.collection('tasks').doc();
-            newTask.id = docRef.id;
-            await docRef.set(newTask);
-          } else {
-            newTask.id = generateId();
-            setTasks(prev => [...prev, newTask]);
-          }
-          addToast('Задача добавлена');
+          const newTask = { ...task, id: generateId(), createdAt: getTodayStr(), status: 'active' };
+          syncToFirebase([...tasks, newTask]);
+          addToast('Задача добавлена в облако');
         }
       };
 
-      const deleteTask = async (id) => {
+      const deleteTask = (id) => {
         const getChildrenIds = (parentId, allTasks) => {
           const children = allTasks.filter(t => t.parentId === parentId);
           return children.reduce((acc, child) => [...acc, child.id, ...getChildrenIds(child.id, allTasks)], []);
         };
         const idsToRemove = [id, ...getChildrenIds(id, tasks)];
-        
-        if (db) {
-          const batch = db.batch();
-          idsToRemove.forEach(tid => batch.delete(db.collection('tasks').doc(tid)));
-          await batch.commit();
-        } else {
-          setTasks(prev => prev.filter(t => !idsToRemove.includes(t.id)));
-        }
+        const newTasks = tasks.filter(t => !idsToRemove.includes(t.id));
+        syncToFirebase(newTasks);
         addToast('Удалено', 'error');
       };
 
-      // Функция для импорта JSON в облако или локально
-      const importData = async (json) => {
-        if (db) {
-          const batch = db.batch();
-          json.forEach(t => batch.set(db.collection('tasks').doc(t.id || generateId()), t));
-          await batch.commit();
-          addToast('Данные загружены в облако!');
-        } else {
-          setTasks(json);
-          addToast('Данные успешно загружены!');
-        }
-      };
-
       return (
-        <TaskContext.Provider value={{ tasks, toggleComplete, saveTask, deleteTask, importData, isDark, setIsDark, isLoading }}>
+        <TaskContext.Provider value={{ tasks, toggleComplete, saveTask, deleteTask, isDark, setIsDark, addToast, isSyncing }}>
           {children}
           <div className="fixed top-6 right-6 z-[200] flex flex-col gap-2">
             <AnimatePresence>
@@ -323,6 +293,7 @@
                   {progress !== null && !isCompleted && <span className="text-xs bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded-full text-textMuted font-medium">{progress}%</span>}
                   {!isCompleted && task.priority && task.priority !== 'normal' && <span className="text-xs font-bold text-red-500 opacity-90">{priorityLabels[task.priority]}</span>}
                 </div>
+                
                 {task.description && <p className="text-xs text-textMuted mt-1 line-clamp-2">{task.description}</p>}
                 
                 <div className="flex gap-2 mt-1.5 text-xs text-textMuted items-center flex-wrap">
@@ -337,9 +308,15 @@
             </div>
 
             <div className="flex items-center gap-2 mt-3 sm:mt-0 ml-12 sm:ml-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-               <button onClick={() => onOpenModal({ parentId: task.id })} className="flex items-center gap-1 px-2 py-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-md text-textMuted hover:text-textMain transition-colors text-xs font-medium"><IconPlus /> Подзадача</button>
-               <button onClick={() => onOpenModal({ editTask: task })} className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-md text-textMuted hover:text-textMain transition-colors"><IconEdit /></button>
-               <button onClick={() => deleteTask(task.id)} className="p-1.5 hover:bg-red-500/20 rounded-md text-textMuted hover:text-red-600 transition-colors"><IconTrash /></button>
+               <button onClick={() => onOpenModal({ parentId: task.id })} className="flex items-center gap-1 px-2 py-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-md text-textMuted hover:text-textMain transition-colors text-xs font-medium">
+                 <IconPlus /> Подзадача
+               </button>
+               <button onClick={() => onOpenModal({ editTask: task })} className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-md text-textMuted hover:text-textMain transition-colors" title="Редактировать">
+                 <IconEdit />
+               </button>
+               <button onClick={() => deleteTask(task.id)} className="p-1.5 hover:bg-red-500/20 rounded-md text-textMuted hover:text-red-600 transition-colors" title="Удалить">
+                 <IconTrash />
+               </button>
                <div className="w-2.5 h-2.5 rounded-full shadow-sm ml-1 border border-glassBorder" style={{ backgroundColor: task.color || 'var(--primary-color)' }} />
             </div>
           </div>
@@ -360,7 +337,10 @@
     // --- Универсальное Модальное окно ---
     const TaskModal = ({ isOpen, onClose, config }) => {
       const { tasks, saveTask, isDark } = useContext(TaskContext);
-      const [formData, setFormData] = useState({ id: null, title: '', subject: '', description: '', deadline: '', priority: 'normal', color: '', parentId: '' });
+      
+      const [formData, setFormData] = useState({
+        id: null, title: '', subject: '', description: '', deadline: '', priority: 'normal', color: '', parentId: ''
+      });
 
       useEffect(() => {
         if (isOpen) {
@@ -368,17 +348,22 @@
           if (config.editTask) {
             setFormData({ ...config.editTask, parentId: config.editTask.parentId || '' });
           } else {
-            setFormData({ id: null, title: '', subject: '', description: '', deadline: config.date || '', priority: 'normal', color: defaultColor, parentId: config.parentId || '' });
+            setFormData({
+              id: null, title: '', subject: '', description: '',
+              deadline: config.date || '', priority: 'normal', color: defaultColor, parentId: config.parentId || ''
+            });
           }
         }
       }, [isOpen, config, isDark]);
 
       if (!isOpen) return null;
+
       const handleSubmit = (e) => {
         e.preventDefault();
         saveTask({ ...formData, parentId: formData.parentId === '' ? null : formData.parentId });
         onClose();
       };
+
       const possibleParents = tasks.filter(t => t.id !== formData.id && t.parentId === null);
 
       return (
@@ -388,9 +373,17 @@
             <h2 className="text-xl font-bold mb-5 text-textMain">{formData.id ? 'Редактировать' : 'Новое задание'}</h2>
             
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <input value={formData.title} onChange={e=>setFormData({...formData, title: e.target.value})} required autoFocus className="w-full bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-primary font-medium shadow-sm" placeholder="Что нужно сделать?" />
-              <input value={formData.subject} onChange={e=>setFormData({...formData, subject: e.target.value})} className="w-full bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-primary text-sm shadow-sm" placeholder="Предмет или категория" />
-              <textarea value={formData.description} onChange={e=>setFormData({...formData, description: e.target.value})} rows="2" className="w-full bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-primary text-sm resize-none shadow-sm" placeholder="Подробное описание или ссылки..." />
+              <input value={formData.title} onChange={e=>setFormData({...formData, title: e.target.value})} required autoFocus 
+                className="w-full bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-primary font-medium shadow-sm" 
+                placeholder="Что нужно сделать?" />
+              
+              <input value={formData.subject} onChange={e=>setFormData({...formData, subject: e.target.value})} 
+                className="w-full bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-primary text-sm shadow-sm" 
+                placeholder="Предмет или категория" />
+              
+              <textarea value={formData.description} onChange={e=>setFormData({...formData, description: e.target.value})} rows="2" 
+                className="w-full bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-primary text-sm resize-none shadow-sm" 
+                placeholder="Подробное описание или ссылки..." />
               
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2 flex flex-col shadow-sm">
@@ -400,7 +393,10 @@
                 <div className="bg-white dark:bg-black/40 border border-glassBorder rounded-xl px-4 py-2 flex flex-col shadow-sm">
                   <label className="text-[10px] uppercase text-textMuted font-bold">Приоритет</label>
                   <select value={formData.priority} onChange={e=>setFormData({...formData, priority: e.target.value})} className="w-full bg-transparent text-gray-900 dark:text-white outline-none text-sm cursor-pointer mt-1 appearance-none font-medium">
-                    <option value="low">Низкий</option><option value="normal">Обычный</option><option value="high">Высокий 🔥</option><option value="urgent">Срочный 🔴</option>
+                    <option value="low">Низкий</option>
+                    <option value="normal">Обычный</option>
+                    <option value="high">Высокий 🔥</option>
+                    <option value="urgent">Срочный 🔴</option>
                   </select>
                 </div>
               </div>
@@ -431,12 +427,11 @@
 
     // --- Разделы ---
     const Dashboard = ({ onOpenModal }) => {
-      const { tasks, isLoading } = useContext(TaskContext);
-      
-      if (isLoading) return <div className="h-full flex items-center justify-center text-textMuted">Синхронизация...</div>;
-
+      const { tasks, isSyncing } = useContext(TaskContext);
       const todayStr = getTodayStr();
+      
       const allRoot = tasks.filter(t => t.parentId === null);
+      
       const todayTasks = allRoot.filter(t => t.deadline === todayStr);
       const todayCompleted = todayTasks.filter(t => t.status === 'completed').length;
       
@@ -450,19 +445,28 @@
         progressText = progressToday === 100 ? '100% (Можно играть в SIMS 🎮)' : `${progressToday}%`;
       }
 
-      const activeRoot = allRoot.filter(t => t.status === 'active').sort((a, b) => {
-        const scoreA = priorityScore[a.priority || 'normal']; const scoreB = priorityScore[b.priority || 'normal'];
+      const activeRoot = allRoot.filter(t => t.status === 'active');
+      activeRoot.sort((a, b) => {
+        const scoreA = priorityScore[a.priority || 'normal'];
+        const scoreB = priorityScore[b.priority || 'normal'];
         if (scoreA !== scoreB) return scoreB - scoreA;
-        return (a.deadline || '9999-99-99').localeCompare(b.deadline || '9999-99-99');
+        const dateA = a.deadline || '9999-99-99'; const dateB = b.deadline || '9999-99-99';
+        return dateA.localeCompare(dateB);
       });
       const completedRoot = allRoot.filter(t => t.status === 'completed');
 
       return (
         <div className="animate-fade-in pb-32 sm:pb-10">
           <header className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-textMain mb-3 tracking-tight">Ваш план</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-textMain mb-3 tracking-tight flex items-center gap-3">
+               Ваш план 
+               {isSyncing && <IconCloud className="w-5 h-5 text-textMuted animate-pulse" />}
+            </h1>
             <div className="glass-panel p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 bg-surface/80 border-glassBorder">
-              <div><h3 className="font-semibold text-textMain text-lg">Прогресс за сегодня</h3><p className="text-sm text-textMuted mt-1">{subtitleText}</p></div>
+              <div>
+                <h3 className="font-semibold text-textMain text-lg">Прогресс за сегодня</h3>
+                <p className="text-sm text-textMuted mt-1">{subtitleText}</p>
+              </div>
               <div className="w-full sm:w-1/2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                 <div className="flex-1 h-4 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden border border-glassBorder shadow-inner">
                   <motion.div initial={{ width: 0 }} animate={{ width: `${progressToday}%` }} className="h-full bg-primary rounded-full relative overflow-hidden transition-all duration-500">
@@ -477,15 +481,21 @@
           <div className="glass-panel p-2 mb-6 bg-surface/50 border-glassBorder">
             <div className="flex justify-between items-center p-4 mb-2 border-b border-glassBorder">
               <h2 className="text-lg font-semibold text-textMain">Активные задания</h2>
-              <button onClick={() => onOpenModal({})} className="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-lg shadow-primary/20">+ Добавить</button>
+              <button onClick={() => onOpenModal({})} className="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-lg shadow-primary/20">
+                + Добавить
+              </button>
             </div>
             <div className="p-2">
-              {activeRoot.length === 0 ? <div className="text-center text-textMuted py-10 font-medium">Все актуальные задачи выполнены! ✨</div> : activeRoot.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)}
+              {activeRoot.length === 0 ? 
+                <div className="text-center text-textMuted py-10 font-medium">Все актуальные задачи выполнены! ✨</div> : 
+                activeRoot.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)
+              }
             </div>
           </div>
 
           {completedRoot.length > 0 && (
-            <div className="p-2"><h3 className="text-sm font-bold text-textMuted uppercase tracking-wider mb-3 pl-2">Выполненные</h3>
+            <div className="p-2">
+              <h3 className="text-sm font-bold text-textMuted uppercase tracking-wider mb-3 pl-2">Выполненные</h3>
               <div className="flex flex-col gap-1 opacity-60 hover:opacity-100 transition-opacity">
                 {completedRoot.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)}
               </div>
@@ -496,17 +506,18 @@
     };
 
     const CalendarView = ({ onOpenModal }) => {
-      const { tasks, isLoading } = useContext(TaskContext);
-      if (isLoading) return null;
+      const { tasks } = useContext(TaskContext);
       const [viewMode, setViewMode] = useState('month'); 
       const [currentMonth, setCurrentMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
       const [currentWeek, setCurrentWeek] = useState(() => getStartOfWeek(new Date()));
+
       const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
       let firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
       firstDay = firstDay === 0 ? 6 : firstDay - 1;
       
       const nextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
       const prevMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+      
       const nextWeek = () => { const d = new Date(currentWeek); d.setDate(d.getDate() + 7); setCurrentWeek(d); };
       const prevWeek = () => { const d = new Date(currentWeek); d.setDate(d.getDate() - 7); setCurrentWeek(d); };
       
@@ -515,8 +526,21 @@
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       });
 
+      // УМНАЯ ЛОГИКА КАЛЕНДАРЯ: Получаем задачи и подзадачи на день без дубликатов
+      const getTasksForDate = (dateStr) => {
+         return tasks.filter(t => {
+            if (t.deadline !== dateStr) return false;
+            // Если у подзадачи есть родитель, и родитель стоит на ЭТОТ ЖЕ день, не выводим подзадачу отдельно
+            if (t.parentId) {
+               const parent = tasks.find(p => p.id === t.parentId);
+               if (parent && parent.deadline === dateStr) return false; 
+            }
+            return true;
+         });
+      };
+
       const weekTasks = [];
-      weekDays.forEach(d => weekTasks.push(...getTasksForDate(d, tasks)));
+      weekDays.forEach(d => weekTasks.push(...getTasksForDate(d)));
       const weekProgress = weekTasks.length > 0 ? Math.round((weekTasks.filter(t => t.status === 'completed').length / weekTasks.length) * 100) : 100;
 
       const titleMonth = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
@@ -550,7 +574,7 @@
                 {Array.from({ length: daysInMonth }).map((_, i) => {
                   const day = i + 1;
                   const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                  const dayTasks = getTasksForDate(dateStr, tasks);
+                  const dayTasks = getTasksForDate(dateStr);
                   const isToday = dateStr === getTodayStr();
 
                   return (
@@ -585,7 +609,7 @@
 
                <div className="flex flex-col gap-4">
                  {weekDays.map((dateStr, i) => {
-                    const dayTasks = getTasksForDate(dateStr, tasks);
+                    const dayTasks = getTasksForDate(dateStr);
                     const isToday = dateStr === getTodayStr();
                     const d = new Date(dateStr);
                     
@@ -608,47 +632,18 @@
       );
     };
 
-    const SettingsView = () => {
-      const { isDark, setIsDark, importData } = useContext(TaskContext);
-      const fileInputRef = useRef(null);
-
-      const handleImport = (e) => {
-        const file = e.target.files[0]; if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-             const json = JSON.parse(event.target.result);
-             if (Array.isArray(json)) importData(json);
-          } catch(e) { alert("Ошибка файла JSON"); }
-        };
-        reader.readAsText(file);
-      }
-
-      return (
-        <div className="animate-fade-in pb-32 sm:pb-10 max-w-2xl"><h1 className="text-2xl font-bold text-textMain mb-6">Настройки</h1><div className="glass-panel p-6 bg-surface/80 border-glassBorder flex flex-col gap-8">
-          
-          <div className="flex items-center justify-between border-b border-glassBorder pb-6">
-            <div><h3 className="font-bold text-textMain text-lg">Оформление</h3><p className="text-textMuted text-sm mt-1">Переключение между светлой и темной темой.</p></div>
-            <button onClick={() => setIsDark(!isDark)} className="p-4 bg-surface rounded-2xl border border-glassBorder shadow-md hover:border-primary hover:text-primary transition-colors text-textMain"><IconSun /></button>
-          </div>
-
-          <div className="border-b border-glassBorder pb-6">
-            <h3 className="font-bold text-textMain text-lg flex items-center gap-2">Синхронизация <IconCloud className={db ? "text-primary" : "text-textMuted"}/></h3>
-            <p className="text-textMuted text-sm mt-1 mb-3">
-              {db ? '🟢 Firebase подключен. Данные синхронизируются в реальном времени.' : '🔴 Локальный режим. Впишите ключи Firebase в код для синхронизации между устройствами.'}
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-bold text-textMain text-lg">Импорт данных</h3>
-            <p className="text-textMuted text-sm mt-1 mb-3">Загрузите старый файл .json (Он автоматически будет отправлен в Firebase, если база подключена).</p>
-            <button onClick={() => fileInputRef.current.click()} className="px-4 py-2 bg-surface border border-glassBorder text-textMain rounded-xl text-sm font-medium hover:border-primary transition-colors">Выбрать JSON файл</button>
-            <input type="file" accept=".json" ref={fileInputRef} onChange={handleImport} className="hidden" />
-          </div>
-
-        </div></div>
-      );
-    }
+    const SettingsView = () => (
+      <div className="animate-fade-in pb-32 sm:pb-10 max-w-2xl"><h1 className="text-2xl font-bold text-textMain mb-6">Настройки</h1><div className="glass-panel p-6 bg-surface/80 border-glassBorder">
+        <TaskContext.Consumer>
+          {({ isDark, setIsDark }) => (
+            <div className="flex items-center justify-between">
+              <div><h3 className="font-bold text-textMain text-lg">Оформление</h3><p className="text-textMuted text-sm mt-1">Переключение между светлой и темной темой.</p></div>
+              <button onClick={() => setIsDark(!isDark)} className="p-4 bg-surface rounded-2xl border border-glassBorder shadow-md hover:border-primary hover:text-primary transition-colors text-textMain"><IconSun /></button>
+            </div>
+          )}
+        </TaskContext.Consumer>
+      </div></div>
+    );
 
     // --- Скелет ---
     const App = () => {
