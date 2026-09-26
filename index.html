@@ -12,10 +12,14 @@
       theme: {
         extend: {
           colors: { 
-            background: 'var(--bg-color)', surface: 'var(--surface-color)', 
-            primary: 'var(--primary-color)', primaryHover: 'var(--primary-hover)',
-            glass: 'var(--glass-bg)', glassBorder: 'var(--glass-border)',
-            textMain: 'var(--text-main)', textMuted: 'var(--text-muted)'
+            background: 'var(--bg-color)', 
+            surface: 'var(--surface-color)', 
+            primary: 'var(--primary-color)', 
+            primaryHover: 'var(--primary-hover)',
+            glass: 'var(--glass-bg)',
+            glassBorder: 'var(--glass-border)',
+            textMain: 'var(--text-main)',
+            textMuted: 'var(--text-muted)'
           },
           fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
         }
@@ -38,15 +42,20 @@
     }
 
     .dark {
-      --bg-color: #0f120f; --surface-color: #161a16;
-      --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08);
-      --text-main: #f3f4f6; --text-muted: #9ca3af;
-      --primary-color: #9fc792; --primary-hover: #8ab07d;
+      --bg-color: #0f120f;
+      --surface-color: #161a16;
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary-color: #9fc792;
+      --primary-hover: #8ab07d;
     }
 
     body {
       background-color: var(--bg-color); color: var(--text-main);
-      margin: 0; overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease;
+      margin: 0; overflow: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     
     .glass-panel {
@@ -62,9 +71,36 @@
     .dark ::-webkit-calendar-picker-indicator { filter: invert(1); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* CSS-символ Логотипа «S»: Розовое золото + Кристалл */
+    .studyflow-logo-s {
+      width: 40px; h-10 rounded-2xl;
+      background: linear-gradient(135deg, #f5d0b9, #edb9a6, #f7cdc1);
+      display: flex; items-center justify-center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      position: relative; overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .studyflow-logo-s::before {
+      content: 'S'; font-family: 'Inter', sans-serif;
+      font-weight: 800; font-size: 24px;
+      color: rgba(62, 96, 52, 0.9);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      background: linear-gradient(180deg, #3e6034, #2b4523);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .studyflow-logo-crystal {
+      position: absolute; width: 6px; height: 6px;
+      border-radius: 50%; background: radial-gradient(#fff, #fef);
+      opacity: 0; animation: twinkle 3s infinite ease-in-out;
+      box-shadow: 0 0 10px 1px #fff;
+    }
+    @keyframes twinkle { 
+      0%, 100% { opacity: 0; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.5); }
+    }
   </style>
 
-  <!-- React & Framer Motion -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -98,13 +134,17 @@
     // Проверяем, ввёл ли пользователь свои ключи
     const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
     
-    if (isFirebaseConfigured && !firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
+    if (!isFirebaseConfigured) {
+        alert("ВНИМАНИЕ! Вы не подключили Firebase. Синхронизация между устройствами и сохранение данных работать НЕ БУДУТ. Инструкция по подключению в конце кода в README-подобном комментарии.");
+    } else {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
     }
+    
     const db = isFirebaseConfigured ? firebase.firestore() : null;
 
     // --- Утилиты ---
-    const generateId = () => Math.random().toString(36).substr(2, 9);
     const getTodayStr = () => {
       const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
@@ -153,10 +193,8 @@
     const IconClock = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
     const IconX = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
     const IconSun = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
-    const IconCloud = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
-    const IconCloudOff = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 14h9"/><line x1="2" y1="2" x2="22" y2="22"/></svg>;
 
-    // --- Стейт Менеджмент (Локально + Firebase) ---
+    // --- Стейт Менеджмент (Нативная СИНХРОНИЗАЦИЯ FIREBASE) ---
     const TaskContext = createContext();
 
     const AppProvider = ({ children }) => {
@@ -166,44 +204,30 @@
       
       const [isDark, setIsDark] = useState(() => {
         const saved = localStorage.getItem('studyflow-theme-settings');
-        return saved ? saved === 'dark' : false;
+        return saved ? saved === 'dark' : false; 
       });
 
-      // Загрузка данных
+      // ПОДПИСКА НА FIREBASE В РЕАЛЬНОМ ВРЕМЕНИ
       useEffect(() => {
-        if (db) {
-          // Подписка на изменения из Firebase (Синхронизация в реальном времени)
-          const unsubscribe = db.collection('tasks').onSnapshot(snapshot => {
-            const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setTasks(fetched);
-            setIsLoading(false);
-          }, err => {
-            addToast('Ошибка синхронизации с Firebase', 'error');
-            setIsLoading(false);
-          });
-          return () => unsubscribe();
-        } else {
-          // Локальный режим
-          let localTasks = [];
-          for (let i = 10; i >= 1; i--) {
-            const saved = localStorage.getItem(`studyflow-tasks-v${i}`);
-            if (saved) { localTasks = JSON.parse(saved); break; }
-          }
-          if (localTasks.length === 0) {
-             const legacy = localStorage.getItem('studyflow-tasks');
-             if (legacy) localTasks = JSON.parse(legacy);
-          }
-          setTasks(localTasks);
+        if (!db) {
+           setIsLoading(false);
+           return;
+        }
+        
+        // Подписка на изменения в коллекции 'tasks'
+        const unsubscribe = db.collection('tasks').onSnapshot(snapshot => {
+          const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setTasks(fetchedTasks);
           setIsLoading(false);
-        }
-      }, []);
+        }, err => {
+          console.error("Firebase error:", err);
+          addToast('Ошибка синхронизации с Firebase', 'error');
+          setIsLoading(false);
+        });
 
-      // Сохраняем в localStorage ТОЛЬКО если нет базы (резервная копия)
-      useEffect(() => {
-        if (!db && !isLoading) {
-          localStorage.setItem('studyflow-tasks-v7', JSON.stringify(tasks));
-        }
-      }, [tasks, isLoading]);
+        // Отписка при размонтировании компонента
+        return () => unsubscribe();
+      }, []);
 
       useEffect(() => {
         localStorage.setItem('studyflow-theme-settings', isDark ? 'dark' : 'light');
@@ -211,71 +235,97 @@
       }, [isDark]);
 
       const addToast = (message, type = 'success') => {
-        const id = generateId(); setToasts(prev => [...prev, { id, message, type }]);
+        const id = Math.random().toString(36).substr(2, 9);
+        setToasts(prev => [...prev, { id, message, type }]);
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
       };
 
       const toggleComplete = async (id) => {
+        if (!db) return;
         const task = tasks.find(t => t.id === id);
         const newStatus = task.status === 'completed' ? 'active' : 'completed';
-        if (db) {
+        try {
            await db.collection('tasks').doc(id).update({ status: newStatus });
-        } else {
-           setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
+        } catch (e) {
+           addToast('Ошибка Firebase при изменении статуса', 'error');
         }
       };
 
       const saveTask = async (task) => {
-        if (task.id) {
-          if (db) await db.collection('tasks').doc(task.id).update(task);
-          else setTasks(prev => prev.map(t => t.id === task.id ? { ...t, ...task } : t));
-          addToast('Изменения сохранены');
-        } else {
-          const newTask = { ...task, createdAt: getTodayStr(), status: 'active' };
-          if (db) {
-            const docRef = db.collection('tasks').doc();
-            newTask.id = docRef.id;
-            await docRef.set(newTask);
+        if (!db) return;
+        try {
+          if (task.id) {
+            await db.collection('tasks').doc(task.id).update(task);
+            addToast('Изменения сохранены');
           } else {
-            newTask.id = generateId();
-            setTasks(prev => [...prev, newTask]);
+            // Firestore создает свой ID
+            const newTask = { ...task, createdAt: getTodayStr(), status: 'active' };
+            await db.collection('tasks').add(newTask);
+            addToast('Задача добавлена');
           }
-          addToast('Задача добавлена');
+        } catch (e) {
+          addToast('Ошибка Firebase при сохранении', 'error');
         }
       };
 
       const deleteTask = async (id) => {
-        const getChildrenIds = (parentId, allTasks) => {
-          const children = allTasks.filter(t => t.parentId === parentId);
-          return children.reduce((acc, child) => [...acc, child.id, ...getChildrenIds(child.id, allTasks)], []);
-        };
-        const idsToRemove = [id, ...getChildrenIds(id, tasks)];
-        
-        if (db) {
+        if (!db) return;
+        try {
+          // Получаем ID всех детей (для пакетного удаления)
+          const getChildrenIds = (parentId, allTasks) => {
+            const children = allTasks.filter(t => t.parentId === parentId);
+            return children.reduce((acc, child) => [...acc, child.id, ...getChildrenIds(child.id, allTasks)], []);
+          };
+          const idsToRemove = [id, ...getChildrenIds(id, tasks)];
+          
+          // Firestore Batch (Пакетное удаление)
           const batch = db.batch();
-          idsToRemove.forEach(tid => batch.delete(db.collection('tasks').doc(tid)));
+          idsToRemove.forEach(tid => {
+             batch.delete(db.collection('tasks').doc(tid));
+          });
           await batch.commit();
-        } else {
-          setTasks(prev => prev.filter(t => !idsToRemove.includes(t.id)));
+          
+          addToast('Удалено', 'error');
+        } catch (e) {
+           addToast('Ошибка Firebase при удалении', 'error');
         }
-        addToast('Удалено', 'error');
       };
 
-      // Функция для импорта JSON в облако или локально
+      // ФУНКЦИЯ ЭКСПОРТА (НОВАЯ)
+      const exportData = () => {
+         const json = JSON.parse(JSON.stringify(tasks));
+         const blob = new Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
+         const url = URL.createObjectURL(blob);
+         const link = document.createElement("a");
+         link.href = url;
+         link.download = `studyflow-tasks-v11-${new Date().toISOString().slice(0, 10)}.json`;
+         document.body.appendChild(link);
+         link.click();
+         document.body.removeChild(link);
+         URL.revokeObjectURL(url);
+         addToast("Файл экспортирован. Скачивание началось.");
+      };
+
+      // ФУНКЦИЯ ИМПОРТА (ОБНОВЛЕННАЯ С ПАКЕТНОЙ ОТПРАВКОЙ)
       const importData = async (json) => {
-        if (db) {
+        if (!db) return;
+        try {
           const batch = db.batch();
-          json.forEach(t => batch.set(db.collection('tasks').doc(t.id || generateId()), t));
+          json.forEach(t => {
+             // Используем Firestore ID для каждой задачи
+             const docRef = db.collection('tasks').doc();
+             batch.set(docRef, { ...t, status: t.status || 'active', createdAt: t.createdAt || getTodayStr() });
+          });
           await batch.commit();
-          addToast('Данные загружены в облако!');
-        } else {
-          setTasks(json);
-          addToast('Данные успешно загружены!');
+          addToast("Данные успешно импортированы в Firebase!");
+        } catch (e) {
+           console.error("Firebase import error:", e);
+           addToast("Ошибка Firebase при импорте. Проверьте структуру файла.", "error");
         }
       };
 
       return (
-        <TaskContext.Provider value={{ tasks, toggleComplete, saveTask, deleteTask, importData, isDark, setIsDark, isLoading }}>
+        <TaskContext.Provider value={{ tasks, toggleComplete, saveTask, deleteTask, isDark, setIsDark, addToast, exportData, importData, isLoading }}>
           {children}
           <div className="fixed top-6 right-6 z-[200] flex flex-col gap-2">
             <AnimatePresence>
@@ -609,17 +659,18 @@
     };
 
     const SettingsView = () => {
-      const { isDark, setIsDark, importData } = useContext(TaskContext);
+      const { isDark, setIsDark, exportData, importData } = useContext(TaskContext);
       const fileInputRef = useRef(null);
 
-      const handleImport = (e) => {
+      const handleImportClick = (e) => {
         const file = e.target.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = (event) => {
           try {
              const json = JSON.parse(event.target.result);
              if (Array.isArray(json)) importData(json);
-          } catch(e) { alert("Ошибка файла JSON"); }
+             else throw new Error("Неверная структура JSON");
+          } catch(e) { alert("Ошибка JSON. Импорт не выполнен."); }
         };
         reader.readAsText(file);
       }
@@ -633,17 +684,16 @@
           </div>
 
           <div className="border-b border-glassBorder pb-6">
-            <h3 className="font-bold text-textMain text-lg flex items-center gap-2">Синхронизация <IconCloud className={db ? "text-primary" : "text-textMuted"}/></h3>
-            <p className="text-textMuted text-sm mt-1 mb-3">
-              {db ? '🟢 Firebase подключен. Данные синхронизируются в реальном времени.' : '🔴 Локальный режим. Впишите ключи Firebase в код для синхронизации между устройствами.'}
-            </p>
+            <h3 className="font-bold text-textMain text-lg">Экспорт данных (НОВАЯ ФУНКЦИЯ)</h3>
+            <p className="text-textMuted text-sm mt-1 mb-3">Сохраните все ваши задачи в один JSON-файл для резервной копии.</p>
+            <button onClick={exportData} className="px-5 py-3 bg-primary hover:bg-primaryHover text-white rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-primary/20">Экспорт данных</button>
           </div>
 
           <div>
             <h3 className="font-bold text-textMain text-lg">Импорт данных</h3>
-            <p className="text-textMuted text-sm mt-1 mb-3">Загрузите старый файл .json (Он автоматически будет отправлен в Firebase, если база подключена).</p>
+            <p className="text-textMuted text-sm mt-1 mb-3">Загрузите старый файл .json (Он автоматически будет отправлен в Firebase Firestore).</p>
             <button onClick={() => fileInputRef.current.click()} className="px-4 py-2 bg-surface border border-glassBorder text-textMain rounded-xl text-sm font-medium hover:border-primary transition-colors">Выбрать JSON файл</button>
-            <input type="file" accept=".json" ref={fileInputRef} onChange={handleImport} className="hidden" />
+            <input type="file" accept=".json" ref={fileInputRef} onChange={handleImportClick} className="hidden" />
           </div>
 
         </div></div>
@@ -663,7 +713,10 @@
         <div className="flex h-screen w-full relative">
           <aside className="hidden md:flex w-64 h-full border-r border-glassBorder bg-surface/80 backdrop-blur-2xl flex-col p-6 z-10 shadow-2xl">
             <div className="flex items-center gap-3 mb-10 text-textMain cursor-pointer" onClick={() => setCurrentView('dashboard')}>
-              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30"><span className="font-bold text-xl text-white">S</span></div>
+              <div className="studyflow-logo-s">
+                 <div className="studyflow-logo-crystal" style={{ top: '10%', left: '80%' }}></div>
+                 <div className="studyflow-logo-crystal" style={{ top: '70%', left: '20%' }}></div>
+              </div>
               <span className="text-xl font-bold tracking-wide">StudyFlow</span>
             </div>
             <nav className="flex flex-col gap-2">
@@ -683,7 +736,7 @@
             ))}
           </nav>
 
-          <main className="flex-1 h-full overflow-y-auto p-4 sm:p-8 relative no-scrollbar">
+          <main className="flex-1 h-full overflow-y-auto p-4 sm:p-8 relative no-scrollbar bg-background">
             {currentView === 'dashboard' && <Dashboard onOpenModal={setModalConfig} />}
             {currentView === 'calendar' && <CalendarView onOpenModal={setModalConfig} />}
             {currentView === 'settings' && <SettingsView />}
@@ -697,5 +750,26 @@
     const Root = () => <AppProvider><App /></AppProvider>;
     ReactDOM.createRoot(document.getElementById('root')).render(<Root />);
   </script>
+
+  <!-- README-подобный комментарий по подключению Firebase
+  
+    🚀 КАК ПОДКЛЮЧИТЬ FIREBASE ДЛЯ СИНХРОНИЗАЦИИ:
+    
+    1. Зайди на Firebase Console (https://console.firebase.google.com/). Нажми "Добавить проект".
+    2. Создай проект (включи Google Analytics по желанию).
+    3. На экране обзора проекта нажми на иконку "Web" ( </> ), чтобы добавить веб-приложение.
+    4. Зарегистрируй приложение (введи имя, например, StudyFlow V11).
+    5. На экране "Добавление SDK Firebase" ты увидишь объект const firebaseConfig = { ... }.
+       СКОПИРУЙ ВСЕ ЕГО ПОЛЯ.
+    6. Вставь эти поля в объект firebaseConfig в кодеindex.html на строке 102. Замени заполнители: apiKey, projectId и т.д.
+    7. Нажми "Продолжить в консоли".
+    8. В меню слева нажми Firestore Database -> Создать базу данных.
+    9. Выбери "Начать в тестовом режиме" (настройка правил для быстрого старта, но будь аккуратен с безопасностью позже).
+    10. Нажми "Создать".
+    
+    ВСЁ! Обнови страницу index.html. Теперь приложение нативно синхронизируется через FirebaseFirestore!
+
+  -->
+
 </body>
 </html>
