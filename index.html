@@ -31,18 +31,18 @@
     
     :root {
       --bg-color: #9fc792;
-      --surface-color: rgba(244, 249, 242, 0.95); /* Более плотный салатово-белый фон для форм */
+      --surface-color: rgba(244, 249, 242, 0.95);
       --glass-bg: rgba(255, 255, 255, 0.65);
       --glass-border: rgba(62, 96, 52, 0.25); 
-      --text-main: #1a2916; /* Глубокий темно-зеленый (не серый) */
-      --text-muted: #4a6842; /* Мягкий темно-зеленый для подсказок (не серый) */
+      --text-main: #1a2916; 
+      --text-muted: #4a6842; 
       --primary-color: #3e6034;
       --primary-hover: #2b4523;
     }
 
     .dark {
       --bg-color: #0f140f;
-      --surface-color: #172116; /* Плотный темно-зеленый */
+      --surface-color: #172116; 
       --glass-bg: rgba(23, 33, 22, 0.8);
       --glass-border: rgba(159, 199, 146, 0.2);
       --text-main: #f3f7f2;
@@ -79,10 +79,10 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useContext, createContext, useMemo } = React;
+    const { useState, useEffect, useContext, createContext, useMemo, useRef } = React;
     const { motion, AnimatePresence } = window.Motion;
 
-    // --- Firebase Инициализация ---
+    // --- Firebase ---
     const firebaseConfig = {
       apiKey: "AIzaSyDz5wPBB05uU0q1vlQlgyGWmnyVwt3APk0",
       authDomain: "ourwishlist-b6bd7.firebaseapp.com",
@@ -134,8 +134,8 @@
     const IconSettings = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
     const IconChevronRight = ({ className = "" }) => <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>;
     const IconCircle = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>;
-    const IconCheckCircle = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
-    const IconTrash = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+    const IconCheckCircle = ({ className = "" }) => <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
+    const IconTrash = ({ className = "" }) => <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
     const IconEdit = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
     const IconPlus = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
     const IconClock = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
@@ -326,7 +326,7 @@
       );
     };
 
-    /* ОТДЕЛЬНОЕ ОКНО ДЛЯ КАЛЕНДАРЯ ДЕДЛАЙНОВ (Убирает наслоение!) */
+    /* Модальное окно Мини-календаря для Дедлайна */
     const MiniDatePickerModal = ({ isOpen, selectedDate, onSelectDate, onClose }) => {
       const [pickerMonth, setPickerMonth] = useState(() => {
         const d = selectedDate ? new Date(selectedDate) : new Date();
@@ -351,10 +351,10 @@
           >
             <div className="flex justify-between items-center mb-4">
               <span className="font-bold text-lg">Дата дедлайна</span>
-              <button type="button" onClick={onClose} className="p-1 text-textMuted hover:text-textMain bg-primary/10 rounded-lg"><IconClose /></button>
+              <button type="button" onClick={onClose} className="p-1.5 text-textMuted hover:text-textMain bg-primary/10 rounded-xl transition-colors"><IconClose /></button>
             </div>
 
-            <div className="flex items-center justify-between mb-4 bg-primary/5 p-2 rounded-xl border border-glassBorder">
+            <div className="flex items-center justify-between mb-4 bg-primary/10 p-2 rounded-xl border border-glassBorder">
               <button onClick={prevMonth} className="p-1 hover:bg-primary/20 rounded-lg text-textMuted hover:text-textMain"><IconChevronRight className="rotate-180" /></button>
               <span className="font-bold text-sm tracking-wide">{monthNames[pickerMonth.getMonth()]} {pickerMonth.getFullYear()}</span>
               <button onClick={nextMonth} className="p-1 hover:bg-primary/20 rounded-lg text-textMuted hover:text-textMain"><IconChevronRight /></button>
@@ -429,11 +429,34 @@
         onClose();
       };
 
-      const possibleParents = tasks.filter(t => t.id !== formData.id && t.parentId === null);
+      // Логика построения красивой лесенки (Иерархии)
+      const getDescendantIds = (taskId, allTasks) => {
+        const children = allTasks.filter(t => t.parentId === taskId);
+        return children.reduce((acc, child) => [...acc, child.id, ...getDescendantIds(child.id, allTasks)], []);
+      };
+
+      const invalidParentIds = formData.id ? [formData.id, ...getDescendantIds(formData.id, tasks)] : [];
+
+      const buildHierarchy = (allTasks, excludeIds, currentParentId = null, depth = 0) => {
+        let result = [];
+        const children = allTasks.filter(t => t.parentId === currentParentId);
+        children.forEach(child => {
+          if (!excludeIds.includes(child.id)) {
+            result.push({
+              ...child,
+              displayTitle: '\u00A0\u00A0'.repeat(depth) + (depth > 0 ? '└ ' : '') + child.title
+            });
+            result = result.concat(buildHierarchy(allTasks, excludeIds, child.id, depth + 1));
+          }
+        });
+        return result;
+      };
+
+      const possibleParents = buildHierarchy(tasks, invalidParentIds);
 
       return (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-md transition-opacity">
-          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} className="glass-panel w-full sm:max-w-lg p-6 bg-surface shadow-2xl rounded-t-3xl sm:rounded-2xl pb-10 sm:pb-6 max-h-[92vh] overflow-y-auto no-scrollbar border border-glassBorder">
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} className="glass-panel w-full sm:max-w-lg p-6 bg-surface shadow-2xl rounded-t-3xl sm:rounded-2xl pb-10 sm:pb-6 max-h-[92vh] overflow-y-auto no-scrollbar border border-glassBorder text-textMain">
             <div className="w-12 h-1.5 bg-primary/30 rounded-full mx-auto mb-6 sm:hidden"></div>
             
             <div className="flex justify-between items-center mb-5">
@@ -491,7 +514,7 @@
                   <label className="text-[10px] uppercase text-textMuted font-bold">Вложить в</label>
                   <select value={formData.parentId} onChange={e=>setFormData({...formData, parentId: e.target.value})} className="w-full bg-transparent text-textMain outline-none text-sm cursor-pointer mt-1 appearance-none font-bold truncate">
                     <option value="" className="bg-surface text-textMain">-</option>
-                    {possibleParents.map(p => <option key={p.id} value={p.id} className="bg-surface text-textMain">{p.title}</option>)}
+                    {possibleParents.map(p => <option key={p.id} value={p.id} className="bg-surface text-textMain">{p.displayTitle}</option>)}
                   </select>
                 </div>
               </div>
@@ -601,8 +624,8 @@
             </h1>
             <div className="glass-panel p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 bg-surface/80 border-glassBorder">
               <div>
-                <h3 className="font-bold text-textMain text-lg">Прогресс за сегодня</h3>
-                <p className="text-sm font-bold text-textMuted mt-1">{subtitleText}</p>
+                <h3 className="font-semibold text-textMain text-lg">Прогресс за сегодня</h3>
+                <p className="text-sm text-textMuted mt-1">{subtitleText}</p>
               </div>
               <div className="w-full sm:w-1/2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                 <div className="flex-1 h-4 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden border border-glassBorder shadow-inner">
