@@ -31,19 +31,19 @@
     
     :root {
       --bg-color: #9fc792;
-      --surface-color: rgba(244, 249, 242, 0.92);
+      --surface-color: rgba(244, 249, 242, 0.95); /* Более плотный салатово-белый фон для форм */
       --glass-bg: rgba(255, 255, 255, 0.65);
       --glass-border: rgba(62, 96, 52, 0.25); 
-      --text-main: #1a2916;
-      --text-muted: #3a5231;        
+      --text-main: #1a2916; /* Глубокий темно-зеленый (не серый) */
+      --text-muted: #4a6842; /* Мягкий темно-зеленый для подсказок (не серый) */
       --primary-color: #3e6034;
       --primary-hover: #2b4523;
     }
 
     .dark {
       --bg-color: #0f140f;
-      --surface-color: #172116;
-      --glass-bg: rgba(23, 33, 22, 0.7);
+      --surface-color: #172116; /* Плотный темно-зеленый */
+      --glass-bg: rgba(23, 33, 22, 0.8);
       --glass-border: rgba(159, 199, 146, 0.2);
       --text-main: #f3f7f2;
       --text-muted: #95ab91;
@@ -79,9 +79,10 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useContext, createContext, useMemo, useRef } = React;
+    const { useState, useEffect, useContext, createContext, useMemo } = React;
     const { motion, AnimatePresence } = window.Motion;
 
+    // --- Firebase Инициализация ---
     const firebaseConfig = {
       apiKey: "AIzaSyDz5wPBB05uU0q1vlQlgyGWmnyVwt3APk0",
       authDomain: "ourwishlist-b6bd7.firebaseapp.com",
@@ -93,11 +94,10 @@
       measurementId: "G-LTX7TDL8KP"
     };
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // --- Утилиты ---
     const generateId = () => Math.random().toString(36).substr(2, 9);
     const getTodayStr = () => {
       const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -128,19 +128,20 @@
     const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
     const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
+    // --- Иконки ---
     const IconHome = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
     const IconCalendar = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
     const IconSettings = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
     const IconChevronRight = ({ className = "" }) => <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>;
     const IconCircle = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>;
     const IconCheckCircle = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
-    const IconTrash = ({ className = "" }) => <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+    const IconTrash = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
     const IconEdit = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
     const IconPlus = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
     const IconClock = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+    const IconClose = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
     const IconSun = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
     const IconCloud = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
-    const IconClose = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 
     const TaskContext = createContext();
 
@@ -154,7 +155,7 @@
           } catch(e) {}
         }
       }
-      return [{ id: '1', title: 'Создать проект', subject: 'Программирование', description: 'Завершить первую версию приложения.', priority: 'high', color: 'var(--primary-color)', status: 'active', parentId: null, deadline: getTodayStr(), createdAt: getTodayStr() }];
+      return [{ id: '1', title: 'Разобраться в приложении', subject: 'Введение', description: 'Добавьте первую задачу.', priority: 'high', color: 'var(--primary-color)', status: 'active', parentId: null, deadline: getTodayStr(), createdAt: getTodayStr() }];
     };
 
     const AppProvider = ({ children }) => {
@@ -169,13 +170,11 @@
 
       useEffect(() => {
         const tasksRef = db.ref('tasks');
-        
         tasksRef.once('value').then(snapshot => {
           if (!snapshot.exists()) {
             const current = getInitialLocalTasks();
             if (current.length > 0) {
-              const tasksObj = {};
-              current.forEach(t => tasksObj[t.id] = t);
+              const tasksObj = {}; current.forEach(t => tasksObj[t.id] = t);
               tasksRef.set(tasksObj);
             }
           }
@@ -207,11 +206,9 @@
       const syncToFirebase = (newTasksArray) => {
         setTasks(newTasksArray);
         localStorage.setItem('studyflow-tasks-v6', JSON.stringify(newTasksArray));
-        const tasksObj = {};
-        newTasksArray.forEach(t => tasksObj[t.id] = t);
+        const tasksObj = {}; newTasksArray.forEach(t => tasksObj[t.id] = t);
         db.ref('tasks').set(tasksObj).catch(err => {
            addToast('Ошибка синхронизации', 'error');
-           console.error(err);
         });
       };
 
@@ -222,12 +219,10 @@
 
       const saveTask = (task) => {
         if (task.id) {
-          const newTasks = tasks.map(t => t.id === task.id ? { ...t, ...task } : t);
-          syncToFirebase(newTasks);
+          syncToFirebase(tasks.map(t => t.id === task.id ? { ...t, ...task } : t));
           addToast('Изменения сохранены');
         } else {
-          const newTask = { ...task, id: generateId(), createdAt: getTodayStr(), status: 'active' };
-          syncToFirebase([...tasks, newTask]);
+          syncToFirebase([...tasks, { ...task, id: generateId(), createdAt: getTodayStr(), status: 'active' }]);
           addToast('Задача сохранена');
         }
       };
@@ -238,8 +233,7 @@
           return children.reduce((acc, child) => [...acc, child.id, ...getChildrenIds(child.id, allTasks)], []);
         };
         const idsToRemove = [id, ...getChildrenIds(id, tasks)];
-        const newTasks = tasks.filter(t => !idsToRemove.includes(t.id));
-        syncToFirebase(newTasks);
+        syncToFirebase(tasks.filter(t => !idsToRemove.includes(t.id)));
         addToast('Удалено', 'error');
       };
 
@@ -250,7 +244,7 @@
             <AnimatePresence>
               {toasts.map(toast => (
                 <motion.div key={toast.id} initial={{ opacity: 0, y: -20, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                  className="px-4 py-3 rounded-xl shadow-lg border backdrop-blur-md text-sm font-medium flex items-center gap-3 bg-surface border-glassBorder text-textMain">
+                  className="px-4 py-3 rounded-xl shadow-lg border backdrop-blur-md text-sm font-bold flex items-center gap-3 bg-surface border-glassBorder text-textMain">
                   {toast.type === 'error' ? <IconTrash className="text-red-500" /> : <IconCheckCircle className="text-primary" />}
                   {toast.message}
                 </motion.div>
@@ -287,17 +281,17 @@
               
               <div className="flex-1 flex flex-col cursor-pointer min-w-0" onClick={() => setIsExpanded(!isExpanded)}>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-[15px] font-medium break-words ${isCompleted ? 'line-through text-textMuted' : 'text-textMain'}`}>{task.title}</span>
-                  {progress !== null && !isCompleted && <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full text-textMain font-medium">{progress}%</span>}
+                  <span className={`text-[15px] font-bold break-words ${isCompleted ? 'line-through text-textMuted' : 'text-textMain'}`}>{task.title}</span>
+                  {progress !== null && !isCompleted && <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full text-textMain font-bold">{progress}%</span>}
                   {!isCompleted && task.priority && task.priority !== 'normal' && <span className="text-xs font-bold text-red-500 opacity-90">{priorityLabels[task.priority]}</span>}
                 </div>
                 
-                {task.description && <p className="text-xs text-textMuted mt-1 line-clamp-2">{task.description}</p>}
+                {task.description && <p className="text-xs text-textMuted mt-1 line-clamp-2 font-medium">{task.description}</p>}
                 
                 <div className="flex gap-2 mt-1.5 text-xs text-textMuted items-center flex-wrap">
-                  {task.subject && <span className="bg-surface px-2 py-0.5 rounded-md border border-glassBorder font-medium">{task.subject}</span>}
+                  {task.subject && <span className="bg-surface px-2 py-0.5 rounded-md border border-glassBorder font-bold">{task.subject}</span>}
                   {task.deadline && (
-                    <span className={`flex items-center gap-1 bg-surface px-2 py-0.5 rounded-md border border-glassBorder font-medium ${isOverdue ? 'text-red-500 border-red-500/40 bg-red-500/10' : ''}`}>
+                    <span className={`flex items-center gap-1 bg-surface px-2 py-0.5 rounded-md border border-glassBorder font-bold ${isOverdue ? 'text-red-500 border-red-500/40 bg-red-500/10' : ''}`}>
                       <IconClock /> {dateStatusStr}
                     </span>
                   )}
@@ -306,7 +300,7 @@
             </div>
 
             <div className="flex items-center gap-2 mt-3 sm:mt-0 ml-12 sm:ml-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-               <button onClick={() => onOpenModal({ parentId: task.id })} className="flex items-center gap-1 px-2.5 py-1.5 bg-primary/15 hover:bg-primary/25 rounded-md text-textMain transition-colors text-xs font-medium">
+               <button onClick={() => onOpenModal({ parentId: task.id })} className="flex items-center gap-1 px-2.5 py-1.5 bg-primary/15 hover:bg-primary/25 rounded-md text-textMain transition-colors text-xs font-bold">
                  <IconPlus /> Подзадача
                </button>
                <button onClick={() => onOpenModal({ editTask: task })} className="p-1.5 hover:bg-primary/20 rounded-md text-textMuted hover:text-textMain transition-colors" title="Редактировать">
@@ -332,12 +326,14 @@
       );
     };
 
-    /* Мобильный и десктопный мини-календарь для дедлайнов */
-    const MiniDatePicker = ({ selectedDate, onSelectDate }) => {
+    /* ОТДЕЛЬНОЕ ОКНО ДЛЯ КАЛЕНДАРЯ ДЕДЛАЙНОВ (Убирает наслоение!) */
+    const MiniDatePickerModal = ({ isOpen, selectedDate, onSelectDate, onClose }) => {
       const [pickerMonth, setPickerMonth] = useState(() => {
         const d = selectedDate ? new Date(selectedDate) : new Date();
         return new Date(d.getFullYear(), d.getMonth(), 1);
       });
+
+      if (!isOpen) return null;
 
       const daysInMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth() + 1, 0).getDate();
       let firstDay = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth(), 1).getDay();
@@ -347,50 +343,57 @@
       const nextMonth = (e) => { e.preventDefault(); setPickerMonth(new Date(pickerMonth.getFullYear(), pickerMonth.getMonth() + 1, 1)); };
 
       return (
-        <div className="p-3 bg-surface/90 border border-glassBorder rounded-2xl shadow-lg mt-2 text-textMain">
-          <div className="flex items-center justify-between mb-2">
-            <button onClick={prevMonth} className="p-1 hover:bg-primary/20 rounded-lg text-textMuted hover:text-textMain"><IconChevronRight className="rotate-180" /></button>
-            <span className="font-semibold text-xs tracking-wide">
-              {monthNames[pickerMonth.getMonth()]} {pickerMonth.getFullYear()}
-            </span>
-            <button onClick={nextMonth} className="p-1 hover:bg-primary/20 rounded-lg text-textMuted hover:text-textMain"><IconChevronRight /></button>
-          </div>
+        <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={onClose}>
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} 
+            className="bg-surface border border-glassBorder p-5 rounded-2xl shadow-2xl w-full max-w-[320px] text-textMain"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <span className="font-bold text-lg">Дата дедлайна</span>
+              <button type="button" onClick={onClose} className="p-1 text-textMuted hover:text-textMain bg-primary/10 rounded-lg"><IconClose /></button>
+            </div>
 
-          <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-textMuted font-bold uppercase mb-1">
-            <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div className="text-red-400">Сб</div><div className="text-red-400">Вс</div>
-          </div>
+            <div className="flex items-center justify-between mb-4 bg-primary/5 p-2 rounded-xl border border-glassBorder">
+              <button onClick={prevMonth} className="p-1 hover:bg-primary/20 rounded-lg text-textMuted hover:text-textMain"><IconChevronRight className="rotate-180" /></button>
+              <span className="font-bold text-sm tracking-wide">{monthNames[pickerMonth.getMonth()]} {pickerMonth.getFullYear()}</span>
+              <button onClick={nextMonth} className="p-1 hover:bg-primary/20 rounded-lg text-textMuted hover:text-textMain"><IconChevronRight /></button>
+            </div>
 
-          <div className="grid grid-cols-7 gap-1">
-            {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} />)}
-            {Array.from({ length: daysInMonth }).map((_, i) => {
-              const day = i + 1;
-              const dateStr = `${pickerMonth.getFullYear()}-${String(pickerMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-              const isSelected = selectedDate === dateStr;
-              const isToday = dateStr === getTodayStr();
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-textMuted font-bold uppercase mb-2">
+              <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div className="text-red-500">Сб</div><div className="text-red-500">Вс</div>
+            </div>
 
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => onSelectDate(dateStr)}
-                  className={`h-7 w-7 text-xs rounded-xl flex items-center justify-center font-medium transition-all ${
-                    isSelected 
-                      ? 'bg-primary text-white font-bold shadow-md scale-105' 
-                      : isToday
-                        ? 'border border-primary text-primary font-bold hover:bg-primary/10'
-                        : 'hover:bg-primary/20 text-textMain'
-                  }`}
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </div>
+            <div className="grid grid-cols-7 gap-1 mb-4">
+              {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} />)}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const day = i + 1;
+                const dateStr = `${pickerMonth.getFullYear()}-${String(pickerMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isSelected = selectedDate === dateStr;
+                const isToday = dateStr === getTodayStr();
 
-          <div className="flex justify-between items-center mt-3 pt-2 border-t border-glassBorder text-xs">
-            <button type="button" onClick={() => onSelectDate(getTodayStr())} className="text-primary font-bold hover:underline">Сегодня</button>
-            <button type="button" onClick={() => onSelectDate('')} className="text-textMuted hover:text-textMain">Без дедлайна</button>
-          </div>
+                return (
+                  <button
+                    key={day} type="button" onClick={() => onSelectDate(dateStr)}
+                    className={`h-9 w-9 text-sm rounded-xl flex items-center justify-center font-bold transition-all mx-auto ${
+                      isSelected 
+                        ? 'bg-primary text-white shadow-md scale-105' 
+                        : isToday
+                          ? 'border-2 border-primary text-primary hover:bg-primary/10'
+                          : 'hover:bg-primary/20 text-textMain'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-between items-center pt-3 border-t border-glassBorder">
+              <button type="button" onClick={() => onSelectDate(getTodayStr())} className="text-primary font-bold px-3 py-1.5 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors text-sm">Сегодня</button>
+              <button type="button" onClick={() => onSelectDate('')} className="text-textMuted font-bold hover:text-textMain px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors text-sm">Без дедлайна</button>
+            </div>
+          </motion.div>
         </div>
       );
     };
@@ -429,71 +432,48 @@
       const possibleParents = tasks.filter(t => t.id !== formData.id && t.parentId === null);
 
       return (
-        <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-md transition-opacity">
-          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} className="glass-panel w-full sm:max-w-lg p-6 bg-surface shadow-2xl rounded-t-3xl sm:rounded-2xl pb-10 sm:pb-6 max-h-[92vh] overflow-y-auto no-scrollbar border border-glassBorder text-textMain">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-md transition-opacity">
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} className="glass-panel w-full sm:max-w-lg p-6 bg-surface shadow-2xl rounded-t-3xl sm:rounded-2xl pb-10 sm:pb-6 max-h-[92vh] overflow-y-auto no-scrollbar border border-glassBorder">
             <div className="w-12 h-1.5 bg-primary/30 rounded-full mx-auto mb-6 sm:hidden"></div>
+            
             <div className="flex justify-between items-center mb-5">
-              <h2 className="text-xl font-bold tracking-tight">{formData.id ? 'Редактировать задание' : 'Новое задание'}</h2>
-              <button type="button" onClick={onClose} className="p-1 rounded-xl text-textMuted hover:text-textMain hover:bg-primary/20"><IconClose /></button>
+              <h2 className="text-xl font-bold tracking-tight text-textMain">{formData.id ? 'Редактировать задание' : 'Новое задание'}</h2>
+              <button type="button" onClick={onClose} className="p-1.5 rounded-xl text-textMuted hover:text-textMain bg-primary/10 hover:bg-primary/20 transition-colors"><IconClose /></button>
             </div>
             
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <input 
-                value={formData.title} 
-                onChange={e=>setFormData({...formData, title: e.target.value})} 
-                required 
-                autoFocus 
-                className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-3 text-textMain placeholder-textMuted/70 outline-none focus:border-primary font-medium shadow-sm transition-all focus:ring-2 focus:ring-primary/20" 
+                value={formData.title} onChange={e=>setFormData({...formData, title: e.target.value})} required autoFocus 
+                className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-3 text-textMain placeholder-textMuted/70 outline-none focus:border-primary font-bold shadow-sm transition-all focus:ring-2 focus:ring-primary/20" 
                 placeholder="Что нужно сделать?" 
               />
               
               <input 
-                value={formData.subject} 
-                onChange={e=>setFormData({...formData, subject: e.target.value})} 
-                className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-2.5 text-textMain placeholder-textMuted/70 outline-none focus:border-primary text-sm shadow-sm transition-all focus:ring-2 focus:ring-primary/20" 
+                value={formData.subject} onChange={e=>setFormData({...formData, subject: e.target.value})} 
+                className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-2.5 text-textMain placeholder-textMuted/70 outline-none focus:border-primary text-sm font-bold shadow-sm transition-all focus:ring-2 focus:ring-primary/20" 
                 placeholder="Предмет или категория" 
               />
               
               <textarea 
-                value={formData.description} 
-                onChange={e=>setFormData({...formData, description: e.target.value})} 
-                rows="2" 
-                className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-2.5 text-textMain placeholder-textMuted/70 outline-none focus:border-primary text-sm resize-none shadow-sm transition-all focus:ring-2 focus:ring-primary/20" 
+                value={formData.description} onChange={e=>setFormData({...formData, description: e.target.value})} rows="2" 
+                className="w-full bg-surface border border-glassBorder rounded-xl px-4 py-2.5 text-textMain placeholder-textMuted/70 outline-none focus:border-primary text-sm font-medium resize-none shadow-sm transition-all focus:ring-2 focus:ring-primary/20" 
                 placeholder="Подробное описание или ссылки..." 
               />
               
               <div className="grid grid-cols-2 gap-3">
-                <div className="relative">
-                  <div 
-                    onClick={() => setShowDatePicker(!showDatePicker)}
-                    className="bg-surface border border-glassBorder rounded-xl px-4 py-2 flex flex-col shadow-sm cursor-pointer hover:border-primary/60 transition-colors"
-                  >
-                    <label className="text-[10px] uppercase text-textMuted font-bold cursor-pointer">Дедлайн</label>
-                    <div className="text-sm font-semibold mt-1 flex items-center gap-1.5 text-textMain truncate">
-                      <IconClock /> {formData.deadline ? getRelativeDateStr(formData.deadline) : 'Выбрать дату'}
-                    </div>
+                <div 
+                  onClick={() => setShowDatePicker(true)}
+                  className="bg-surface border border-glassBorder rounded-xl px-4 py-2 flex flex-col shadow-sm cursor-pointer hover:border-primary/60 transition-colors"
+                >
+                  <label className="text-[10px] uppercase text-textMuted font-bold cursor-pointer">Дедлайн</label>
+                  <div className="text-sm font-bold mt-1 flex items-center gap-1.5 text-textMain truncate">
+                    <IconClock /> {formData.deadline ? getRelativeDateStr(formData.deadline) : 'Выбрать дату'}
                   </div>
-
-                  {showDatePicker && (
-                    <div className="absolute left-0 right-0 z-50 mt-1">
-                      <MiniDatePicker 
-                        selectedDate={formData.deadline} 
-                        onSelectDate={(date) => {
-                          setFormData({ ...formData, deadline: date });
-                          setShowDatePicker(false);
-                        }} 
-                      />
-                    </div>
-                  )}
                 </div>
 
                 <div className="bg-surface border border-glassBorder rounded-xl px-4 py-2 flex flex-col shadow-sm">
                   <label className="text-[10px] uppercase text-textMuted font-bold">Приоритет</label>
-                  <select 
-                    value={formData.priority} 
-                    onChange={e=>setFormData({...formData, priority: e.target.value})} 
-                    className="w-full bg-transparent text-textMain outline-none text-sm cursor-pointer mt-1 appearance-none font-medium"
-                  >
+                  <select value={formData.priority} onChange={e=>setFormData({...formData, priority: e.target.value})} className="w-full bg-transparent text-textMain outline-none text-sm cursor-pointer mt-1 appearance-none font-bold">
                     <option value="low" className="bg-surface text-textMain">Низкий</option>
                     <option value="normal" className="bg-surface text-textMain">Обычный</option>
                     <option value="high" className="bg-surface text-textMain">Высокий 🔥</option>
@@ -505,20 +485,11 @@
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface border border-glassBorder rounded-xl px-4 py-2 flex flex-col justify-center shadow-sm">
                    <label className="text-[10px] uppercase text-textMuted font-bold mb-1">Цвет метки</label>
-                   <input 
-                    type="color" 
-                    value={formData.color} 
-                    onChange={e=>setFormData({...formData, color: e.target.value})} 
-                    className="h-6 w-full bg-transparent cursor-pointer rounded border-none" 
-                   />
+                   <input type="color" value={formData.color} onChange={e=>setFormData({...formData, color: e.target.value})} className="h-6 w-full bg-transparent cursor-pointer rounded border-none" />
                 </div>
                 <div className="bg-surface border border-glassBorder rounded-xl px-4 py-2 flex flex-col shadow-sm">
                   <label className="text-[10px] uppercase text-textMuted font-bold">Вложить в</label>
-                  <select 
-                    value={formData.parentId} 
-                    onChange={e=>setFormData({...formData, parentId: e.target.value})} 
-                    className="w-full bg-transparent text-textMain outline-none text-sm cursor-pointer mt-1 appearance-none font-medium truncate"
-                  >
+                  <select value={formData.parentId} onChange={e=>setFormData({...formData, parentId: e.target.value})} className="w-full bg-transparent text-textMain outline-none text-sm cursor-pointer mt-1 appearance-none font-bold truncate">
                     <option value="" className="bg-surface text-textMain">-</option>
                     {possibleParents.map(p => <option key={p.id} value={p.id} className="bg-surface text-textMain">{p.title}</option>)}
                   </select>
@@ -526,11 +497,18 @@
               </div>
               
               <div className="flex justify-end gap-3 mt-4">
-                <button type="button" onClick={onClose} className="px-5 py-2.5 text-textMuted hover:bg-primary/10 rounded-xl transition-colors font-medium">Отмена</button>
-                <button type="submit" className="px-6 py-2.5 bg-primary hover:bg-primaryHover text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-all active:scale-95">Сохранить</button>
+                <button type="button" onClick={onClose} className="px-5 py-2.5 text-textMuted bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors font-bold">Отмена</button>
+                <button type="submit" className="px-6 py-2.5 bg-primary hover:bg-primaryHover text-white font-bold rounded-xl shadow-lg shadow-primary/30 transition-all active:scale-95">Сохранить</button>
               </div>
             </form>
           </motion.div>
+
+          <MiniDatePickerModal 
+            isOpen={showDatePicker} 
+            selectedDate={formData.deadline} 
+            onSelectDate={(date) => { setFormData({ ...formData, deadline: date }); setShowDatePicker(false); }} 
+            onClose={() => setShowDatePicker(false)}
+          />
         </div>
       );
     };
@@ -554,13 +532,13 @@
                 <span className="text-xs uppercase font-bold text-textMuted tracking-wider">План на день</span>
                 <h3 className="text-lg font-bold text-textMain mt-0.5">{titleDate}</h3>
               </div>
-              <button onClick={onClose} className="p-1 rounded-xl text-textMuted hover:text-textMain hover:bg-primary/20"><IconClose /></button>
+              <button onClick={onClose} className="p-2 rounded-xl text-textMuted hover:text-textMain bg-primary/10 hover:bg-primary/20 transition-colors"><IconClose /></button>
             </div>
 
             <div className="flex-1 overflow-y-auto no-scrollbar space-y-2 mb-4">
               {topLevelDayTasks.length === 0 ? (
-                <div className="text-center py-10 text-textMuted text-sm">
-                  На этот день ничего не запланировано.
+                <div className="text-center py-10 text-textMuted text-sm font-bold bg-primary/5 rounded-xl border border-glassBorder">
+                  На этот день ничего не запланировано. ✨
                 </div>
               ) : (
                 topLevelDayTasks.map(task => (
@@ -623,8 +601,8 @@
             </h1>
             <div className="glass-panel p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 bg-surface/80 border-glassBorder">
               <div>
-                <h3 className="font-semibold text-textMain text-lg">Прогресс за сегодня</h3>
-                <p className="text-sm text-textMuted mt-1">{subtitleText}</p>
+                <h3 className="font-bold text-textMain text-lg">Прогресс за сегодня</h3>
+                <p className="text-sm font-bold text-textMuted mt-1">{subtitleText}</p>
               </div>
               <div className="w-full sm:w-1/2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                 <div className="flex-1 h-4 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden border border-glassBorder shadow-inner">
@@ -639,14 +617,14 @@
 
           <div className="glass-panel p-2 mb-6 bg-surface/50 border-glassBorder">
             <div className="flex justify-between items-center p-4 mb-2 border-b border-glassBorder">
-              <h2 className="text-lg font-semibold text-textMain">Активные задания</h2>
-              <button onClick={() => onOpenModal({})} className="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-lg shadow-primary/20">
+              <h2 className="text-lg font-bold text-textMain">Активные задания</h2>
+              <button onClick={() => onOpenModal({})} className="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-primary/20">
                 + Добавить
               </button>
             </div>
             <div className="p-2">
               {activeRoot.length === 0 ? 
-                <div className="text-center text-textMuted py-10 font-medium">Все актуальные задачи выполнены! ✨</div> : 
+                <div className="text-center text-textMuted py-10 font-bold">Все актуальные задачи выполнены! ✨</div> : 
                 activeRoot.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)
               }
             </div>
@@ -710,15 +688,15 @@
             <div className="flex items-center justify-between w-full sm:w-auto gap-4">
                <h1 className="text-2xl font-bold text-textMain">Календарь</h1>
                <div className="flex bg-surface p-1 rounded-xl border border-glassBorder shadow-sm">
-                 <button onClick={() => setViewMode('month')} className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${viewMode === 'month' ? 'bg-primary text-white' : 'text-textMuted hover:text-textMain'}`}>Месяц</button>
-                 <button onClick={() => setViewMode('week')} className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${viewMode === 'week' ? 'bg-primary text-white' : 'text-textMuted hover:text-textMain'}`}>Неделя</button>
+                 <button onClick={() => setViewMode('month')} className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors ${viewMode === 'month' ? 'bg-primary text-white' : 'text-textMuted hover:text-textMain'}`}>Месяц</button>
+                 <button onClick={() => setViewMode('week')} className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors ${viewMode === 'week' ? 'bg-primary text-white' : 'text-textMuted hover:text-textMain'}`}>Неделя</button>
                </div>
             </div>
             
             <div className="flex items-center gap-2 bg-surface p-1.5 rounded-2xl border border-glassBorder shadow-sm w-full sm:w-auto justify-between sm:justify-start">
-              <button onClick={viewMode === 'month' ? prevMonth : prevWeek} className="p-2 rounded-xl hover:bg-primary/20 transition-colors"><IconChevronRight className="rotate-180" /></button>
+              <button onClick={viewMode === 'month' ? prevMonth : prevWeek} className="p-2 rounded-xl hover:bg-primary/20 transition-colors text-textMain"><IconChevronRight className="rotate-180" /></button>
               <span className="font-bold text-sm text-center text-textMain px-2 whitespace-nowrap">{viewMode === 'month' ? titleMonth : titleWeek}</span>
-              <button onClick={viewMode === 'month' ? nextMonth : nextWeek} className="p-2 rounded-xl hover:bg-primary/20 transition-colors"><IconChevronRight /></button>
+              <button onClick={viewMode === 'month' ? nextMonth : nextWeek} className="p-2 rounded-xl hover:bg-primary/20 transition-colors text-textMain"><IconChevronRight /></button>
             </div>
           </header>
 
@@ -743,11 +721,11 @@
                     >
                       <div className="flex justify-between items-center px-1">
                         <span className={`text-xs sm:text-sm font-bold ${isToday ? 'text-primary' : 'text-textMain'}`}>{day}</span>
-                        {dayTasks.length > 0 && <span className="w-2 h-2 rounded-full bg-primary"></span>}
+                        {dayTasks.length > 0 && <span className="w-2 h-2 rounded-full bg-primary shadow-sm"></span>}
                       </div>
                       <div className="hidden sm:flex flex-col gap-1 overflow-y-auto no-scrollbar max-h-20 mt-1">
                         {dayTasks.map(t => (
-                          <div key={t.id} className={`text-[10px] px-1.5 py-0.5 rounded-md flex items-center gap-1 truncate font-medium ${t.status === 'completed' ? 'opacity-50 line-through bg-black/5 dark:bg-white/5' : 'bg-primary/20 text-textMain border border-primary/20'}`}>
+                          <div key={t.id} className={`text-[10px] px-1.5 py-0.5 rounded-md flex items-center gap-1 truncate font-bold ${t.status === 'completed' ? 'opacity-50 line-through bg-black/5 dark:bg-white/5' : 'bg-primary/20 text-textMain border border-primary/20'}`}>
                             {t.parentId && <span className="text-primary opacity-50 text-[8px] mr-0.5">└</span>} {t.title}
                           </div>
                         ))}
@@ -760,7 +738,7 @@
           ) : (
             <div className="glass-panel flex-1 p-4 sm:p-6 flex flex-col overflow-y-auto bg-surface/50 border-glassBorder animate-fade-in no-scrollbar">
                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-6 p-4 bg-primary/10 rounded-2xl border border-primary/20">
-                 <span className="font-semibold text-textMain">Прогресс недели (Все задачи)</span>
+                 <span className="font-bold text-textMain">Прогресс недели (Все задачи)</span>
                  <div className="flex items-center gap-3 w-full sm:w-1/2">
                     <div className="flex-1 h-3 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
                       <motion.div initial={{ width: 0 }} animate={{ width: `${weekProgress}%` }} className="h-full bg-primary rounded-full"></motion.div>
@@ -778,11 +756,11 @@
                     return (
                       <div key={dateStr} className={`p-4 rounded-2xl border ${isToday ? 'border-primary bg-primary/5 shadow-sm' : 'border-glassBorder bg-surface'} flex flex-col gap-3`}>
                         <div className="flex justify-between items-center border-b border-glassBorder pb-2">
-                          <h3 className={`font-bold ${isToday ? 'text-primary' : 'text-textMain'}`}>{dayNames[i]}, <span className="font-medium text-textMuted text-sm">{d.getDate()} {monthNames[d.getMonth()]}</span></h3>
+                          <h3 className={`font-bold ${isToday ? 'text-primary' : 'text-textMain'}`}>{dayNames[i]}, <span className="font-bold text-textMuted text-sm">{d.getDate()} {monthNames[d.getMonth()]}</span></h3>
                           <button onClick={() => onOpenModal({ date: dateStr })} className="text-primary bg-primary/10 hover:bg-primary hover:text-white p-1.5 rounded-lg transition-colors"><IconPlus /></button>
                         </div>
                         <div className="flex flex-col gap-1">
-                           {dayTasks.length === 0 ? <p className="text-xs text-textMuted italic">Нет задач</p> : dayTasks.map(t => <TaskItem key={t.id} task={t} onOpenModal={onOpenModal} />)}
+                           {dayTasks.length === 0 ? <p className="text-xs text-textMuted italic font-bold">Нет задач</p> : dayTasks.map(t => <TaskItem key={t.id} task={t} onOpenModal={onOpenModal} />)}
                         </div>
                       </div>
                     )
@@ -795,7 +773,7 @@
             isOpen={Boolean(viewDayDate)} 
             onClose={() => setViewDayDate(null)} 
             date={viewDayDate} 
-            onOpenModal={onOpenModal} 
+            onOpenModal={(cfg) => { setViewDayDate(null); onOpenModal(cfg); }} 
           />
         </div>
       );
@@ -806,7 +784,7 @@
         <TaskContext.Consumer>
           {({ isDark, setIsDark }) => (
             <div className="flex items-center justify-between">
-              <div><h3 className="font-bold text-textMain text-lg">Оформление</h3><p className="text-textMuted text-sm mt-1">Переключение между светлой и темной темой.</p></div>
+              <div><h3 className="font-bold text-textMain text-lg">Оформление</h3><p className="text-textMuted text-sm font-bold mt-1">Переключение между светлой и темной темой.</p></div>
               <button onClick={() => setIsDark(!isDark)} className="p-4 bg-surface rounded-2xl border border-glassBorder shadow-md hover:border-primary hover:text-primary transition-colors text-textMain"><IconSun /></button>
             </div>
           )}
@@ -831,7 +809,7 @@
             </div>
             <nav className="flex flex-col gap-2">
               {navItems.map(item => (
-                 <button key={item.id} onClick={() => setCurrentView(item.id)} className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all w-full text-left font-medium ${currentView === item.id ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-textMuted hover:bg-primary/10 hover:text-textMain'}`}>
+                 <button key={item.id} onClick={() => setCurrentView(item.id)} className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all w-full text-left font-bold ${currentView === item.id ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-textMuted hover:bg-primary/10 hover:text-textMain'}`}>
                   <item.icon /> <span>{item.label}</span>
                 </button>
               ))}
