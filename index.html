@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>StudyFlow — Идеальный Планер</title>
+  <title>StudyFlow — Рабочее пространство</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -14,6 +14,7 @@
           colors: { 
             background: 'var(--bg-color)', 
             surface: 'var(--surface-color)', 
+            surfaceHover: 'var(--surface-hover)',
             inputBg: 'var(--input-bg)',
             primary: 'var(--primary-color)', 
             primaryHover: 'var(--primary-hover)',
@@ -23,7 +24,7 @@
             textMain: 'var(--text-main)', 
             textMuted: 'var(--text-muted)'
           },
-          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+          fontFamily: { sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'] }
         }
       }
     }
@@ -34,52 +35,72 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
     
-    /* Светлая тема: Тотальный Matcha / Sage Green без единого серого оттенка */
+    /* Светлая тема: Фирменный салатовый (#9fc792) + тактильный мятный фарфор */
     :root {
       --bg-color: #9fc792;
-      --surface-color: #eef6eb; 
-      --input-bg: #e1eedd;
-      --glass-bg: rgba(238, 246, 235, 0.75);
-      --glass-border: rgba(53, 87, 44, 0.25); 
-      --text-main: #182814; 
-      --text-muted: #46633f; 
-      --primary-color: #35572c;
-      --primary-hover: #25401e;
-      --btn-text: #f4f9f2;
+      --bg-gradient: radial-gradient(circle at 10% 15%, #b5d9a8 0%, #9fc792 55%, #8db680 100%);
+      --surface-color: #f3f8f1; 
+      --surface-hover: #e9f2e6;
+      --input-bg: #e2ede0;
+      --glass-bg: rgba(243, 248, 241, 0.86);
+      --glass-border: rgba(45, 79, 37, 0.18); 
+      --text-main: #142411; 
+      --text-muted: #43613c; 
+      --primary-color: #2d5225;
+      --primary-hover: #1e3b18;
+      --btn-text: #f5faf4;
+      --shadow-soft: 0 10px 30px -10px rgba(20, 36, 17, 0.12), 0 4px 12px -2px rgba(20, 36, 17, 0.05);
     }
 
-    /* Темная тема: Deep Forest с нежным салатовым акцентом */
+    /* Тёмная тема: Глубокий хвойный лес */
     .dark {
-      --bg-color: #0d120d;
-      --surface-color: #151f14; 
-      --input-bg: #1d2b1b;
-      --glass-bg: rgba(21, 31, 20, 0.82);
-      --glass-border: rgba(159, 199, 146, 0.2);
-      --text-main: #eef5ec;
-      --text-muted: #8ca687;
+      --bg-color: #0b100b;
+      --bg-gradient: radial-gradient(circle at 15% 15%, #162215 0%, #0b100b 65%);
+      --surface-color: #141d13; 
+      --surface-hover: #1b271a;
+      --input-bg: #1e2c1c;
+      --glass-bg: rgba(20, 29, 19, 0.88);
+      --glass-border: rgba(159, 199, 146, 0.16);
+      --text-main: #edf5eb;
+      --text-muted: #8aa685;
       --primary-color: #9fc792;
       --primary-hover: #b4d8a8;
-      --btn-text: #111c0f;
+      --btn-text: #0f1a0d;
+      --shadow-soft: 0 14px 36px -10px rgba(0, 0, 0, 0.45);
     }
 
+    * { box-sizing: border-box; }
+
     body {
-      background-color: var(--bg-color); 
+      background-color: var(--bg-color);
+      background-image: var(--bg-gradient);
       color: var(--text-main);
       margin: 0; 
       overflow: hidden;
-      transition: background-color 0.35s ease, color 0.35s ease;
+      -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
     }
     
-    .glass-panel {
+    .bento-card {
       background: var(--glass-bg); 
-      backdrop-filter: blur(24px); 
-      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(16px); 
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--glass-border); 
-      border-radius: 1.35rem; 
-      box-shadow: 0 12px 40px -12px rgba(24, 40, 20, 0.14);
+      border-radius: 1.25rem; 
+      box-shadow: var(--shadow-soft);
+    }
+
+    .task-card {
+      background: var(--surface-color);
+      border: 1px solid var(--glass-border);
+      border-radius: 1rem;
+      transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .task-card:hover {
+      background: var(--surface-hover);
+      box-shadow: 0 4px 14px -4px rgba(20, 36, 17, 0.08);
     }
 
     @keyframes shimmer {
@@ -91,12 +112,12 @@
       position: absolute;
       inset: 0;
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-      animation: shimmer 2.5s infinite;
+      animation: shimmer 2.8s infinite;
     }
 
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 999px; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
@@ -104,16 +125,14 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
 </head>
 <body>
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useContext, createContext, useMemo, useRef } = React;
-    const { motion, AnimatePresence } = window.Motion;
+    const { useState, useEffect, useContext, createContext, useMemo, useRef, useCallback, memo } = React;
 
-    // --- Firebase Инициализация ---
+    // --- Firebase Инициализация (Твоя база данных) ---
     const firebaseConfig = {
       apiKey: "AIzaSyDz5wPBB05uU0q1vlQlgyGWmnyVwt3APk0",
       authDomain: "ourwishlist-b6bd7.firebaseapp.com",
@@ -128,7 +147,7 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- Утилиты и Звуки ---
+    // --- Утилиты дат и звука ---
     const generateId = () => Math.random().toString(36).substr(2, 9);
     
     const getTodayStr = () => {
@@ -163,7 +182,6 @@
       return new Date(d.setDate(diff));
     };
 
-    // Мягкий приятный звук при выполнении или завершении таймера (Web Audio API)
     const playChime = (type = 'complete') => {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -172,55 +190,54 @@
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.09);
-          gain.gain.setValueAtTime(0.08, ctx.currentTime + idx * 0.09);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.09 + 0.35);
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+          gain.gain.setValueAtTime(0.07, ctx.currentTime + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.3);
           osc.connect(gain);
           gain.connect(ctx.destination);
-          osc.start(ctx.currentTime + idx * 0.09);
-          osc.stop(ctx.currentTime + idx * 0.09 + 0.35);
+          osc.start(ctx.currentTime + idx * 0.08);
+          osc.stop(ctx.currentTime + idx * 0.08 + 0.3);
         });
       } catch (e) {}
     };
 
     const priorityScore = { urgent: 4, high: 3, normal: 2, low: 1 };
-    const priorityLabels = { urgent: 'Срочный 🔴', high: 'Высокий 🔥', normal: 'Обычный', low: 'Низкий' };
+    const priorityLabels = { urgent: 'Срочно', high: 'Высокий', normal: 'Обычный', low: 'Низкий' };
     const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
     const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-    const defaultColors = ['#35572c', '#9fc792', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51', '#457b9d', '#9b5de5'];
+    const defaultColors = ['#2d5225', '#67945b', '#2a9d8f', '#d97706', '#e76f51', '#3b82f6', '#8b5cf6', '#ec4899'];
 
     // --- Иконки ---
-    const IconHome = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-    const IconCalendar = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+    const IconHome = () => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>;
+    const IconCalendar = () => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
     const IconClock = ({ size = 14 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-    const IconTarget = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
-    const IconSettings = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
-    const IconChevronRight = ({ className = "" }) => <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>;
-    const IconCircle = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>;
-    const IconCheckCircle = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
-    const IconTrash = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
-    const IconEdit = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
-    const IconPlus = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
-    const IconClose = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
-    const IconSun = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
-    const IconMoon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
-    const IconCloud = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
-    const IconSearch = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
-    const IconPin = ({ active }) => <svg width="15" height="15" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>;
-    const IconLink = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
-    // Кристалл Sims Plumbob
+    const IconTarget = () => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+    const IconSettings = () => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+    const IconChevronRight = ({ className = "" }) => <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>;
+    const IconCircle = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9.5"/></svg>;
+    const IconCheckCircle = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="var(--surface-color)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 9 10.5 14.5 8 12"/></svg>;
+    const IconTrash = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+    const IconEdit = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+    const IconPlus = ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+    const IconClose = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+    const IconSun = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
+    const IconMoon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
+    const IconCloud = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
+    const IconSearch = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
+    const IconPin = ({ active }) => <svg width="14" height="14" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>;
+    const IconLink = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
     const IconPlumbob = () => (
-      <svg width="18" height="22" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline-block animate-bounce">
-        <polygon points="12,1 22,16 12,31 2,16" fill="#4ade80" stroke="#166534" strokeWidth="1.5"/>
-        <polygon points="12,1 22,16 12,16" fill="#86efac" opacity="0.7"/>
-        <polygon points="12,31 22,16 12,16" fill="#22c55e" opacity="0.8"/>
+      <svg width="16" height="20" viewBox="0 0 24 32" fill="none" className="inline-block animate-bounce">
+        <polygon points="12,1 22,16 12,31 2,16" fill="#22c55e" stroke="#14532d" strokeWidth="1.5"/>
+        <polygon points="12,1 22,16 12,16" fill="#86efac" opacity="0.75"/>
+        <polygon points="12,31 22,16 12,16" fill="#16a34a" opacity="0.85"/>
       </svg>
     );
 
-    // --- Стейт Менеджмент и Синхронизация ---
+    // --- Стейт-менеджмент и Безопасная Синхронизация ---
     const TaskContext = createContext();
 
-    // Чтение существующих задач из всех прошлых версий без потери данных
+    // Чтение всех прошлых версий из localStorage без потери данных
     const getInitialLocalTasks = () => {
       for (let i = 10; i >= 1; i--) {
         const saved = localStorage.getItem(`studyflow-tasks-v${i}`);
@@ -238,7 +255,7 @@
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         } catch(e) {}
       }
-      return [{ id: '1', title: 'Разобраться в приложении', subject: 'Введение', description: 'Добавьте первую задачу или подзадачу.', priority: 'high', color: '#35572c', status: 'active', parentId: null, deadline: getTodayStr(), createdAt: getTodayStr(), isPinned: false }];
+      return [];
     };
 
     const AppProvider = ({ children }) => {
@@ -246,40 +263,48 @@
       const [toasts, setToasts] = useState([]);
       const [isSyncing, setIsSyncing] = useState(true);
       const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('studyflow-sound') !== 'false');
-      
+      const [expandSignal, setExpandSignal] = useState({ mode: true, tick: 0 });
+      const cloudReadyRef = useRef(false);
+
+      // Глобальный таймер Помодоро (работает даже при переключении вкладок)
+      const [pomoMode, setPomoMode] = useState('work');
+      const [pomoSeconds, setPomoSeconds] = useState(25 * 60);
+      const [pomoRunning, setPomoRunning] = useState(false);
+      const [pomoTaskId, setPomoTaskId] = useState('');
+      const pomoDurations = { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
+
       const [isDark, setIsDark] = useState(() => {
         const saved = localStorage.getItem('studyflow-theme-settings');
-        return saved ? saved === 'dark' : false;
+        return saved ? saved === 'dark' : false; // По умолчанию фирменная светлая салатовая тема
       });
 
       useEffect(() => {
         const tasksRef = db.ref('tasks');
-        
-        tasksRef.once('value').then(snapshot => {
-          if (!snapshot.exists()) {
-            const current = getInitialLocalTasks();
-            if (current.length > 0) {
-              const tasksObj = {};
-              current.forEach(t => { tasksObj[t.id] = JSON.parse(JSON.stringify(t)); });
-              tasksRef.set(tasksObj);
-            }
-          }
-        });
 
         tasksRef.on('value', (snapshot) => {
+          cloudReadyRef.current = true;
           if (snapshot.exists()) {
             const data = snapshot.val();
-            const loadedTasks = Object.values(data).map(t => ({
-              ...t,
-              parentId: t.parentId || null,
-              isPinned: Boolean(t.isPinned)
-            }));
+            const loadedTasks = Object.values(data)
+              .filter(Boolean)
+              .map(t => ({
+                ...t,
+                parentId: t.parentId || null,
+                isPinned: Boolean(t.isPinned)
+              }));
             setTasks(loadedTasks);
             localStorage.setItem('studyflow-tasks-v6', JSON.stringify(loadedTasks));
           } else {
-            setTasks([]);
-            localStorage.setItem('studyflow-tasks-v6', JSON.stringify([]));
+            // Если в облаке пусто, но локально есть старые задачи — бережно переносим их в облако
+            const localBackup = getInitialLocalTasks();
+            if (localBackup.length > 0) {
+              const tasksObj = {};
+              localBackup.forEach(t => { if (t && t.id) tasksObj[t.id] = JSON.parse(JSON.stringify(t)); });
+              tasksRef.set(tasksObj);
+            }
           }
+          setIsSyncing(false);
+        }, () => {
           setIsSyncing(false);
         });
 
@@ -295,112 +320,168 @@
         localStorage.setItem('studyflow-sound', soundEnabled ? 'true' : 'false');
       }, [soundEnabled]);
 
-      const addToast = (message, type = 'success', undoAction = null) => {
+      // Работа фонового таймера Помодоро
+      useEffect(() => {
+        if (!pomoRunning) return;
+        const timer = setInterval(() => {
+          setPomoSeconds(prev => {
+            if (prev <= 1) {
+              setPomoRunning(false);
+              if (soundEnabled) playChime('timer');
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        return () => clearInterval(timer);
+      }, [pomoRunning, soundEnabled]);
+
+      const switchPomoMode = useCallback((newMode) => {
+        setPomoRunning(false);
+        setPomoMode(newMode);
+        setPomoSeconds(pomoDurations[newMode]);
+      }, []);
+
+      const addToast = useCallback((message, type = 'success', undoAction = null) => {
         const id = generateId();
         setToasts(prev => [...prev, { id, message, type, undoAction }]);
-        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), undoAction ? 5500 : 3200);
-      };
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), undoAction ? 5500 : 3000);
+      }, []);
 
-      const syncToFirebase = (newTasksArray) => {
-        // Очищаем undefined поля, чтобы Firebase никогда не выдавал ошибку
+      const syncToFirebase = useCallback((newTasksArray) => {
         const cleanArray = JSON.parse(JSON.stringify(newTasksArray));
         setTasks(cleanArray);
         localStorage.setItem('studyflow-tasks-v6', JSON.stringify(cleanArray));
         const tasksObj = {};
-        cleanArray.forEach(t => { tasksObj[t.id] = t; });
+        cleanArray.forEach(t => { if (t && t.id) tasksObj[t.id] = t; });
         db.ref('tasks').set(tasksObj).catch(() => {
-          addToast('Ошибка синхронизации с облаком', 'error');
+          addToast('Сохранено локально (нет сети)', 'error');
         });
-      };
+      }, [addToast]);
 
-      const toggleComplete = (id) => {
-        const target = tasks.find(t => t.id === id);
-        if (!target) return;
-        const nextStatus = target.status === 'completed' ? 'active' : 'completed';
-        if (nextStatus === 'completed' && soundEnabled) playChime('complete');
-        const newTasks = tasks.map(t => t.id === id ? { ...t, status: nextStatus } : t);
-        syncToFirebase(newTasks);
-      };
+      const toggleComplete = useCallback((id) => {
+        setTasks(prev => {
+          const target = prev.find(t => t.id === id);
+          if (!target) return prev;
+          const nextStatus = target.status === 'completed' ? 'active' : 'completed';
+          if (nextStatus === 'completed' && soundEnabled) playChime('complete');
+          const updated = prev.map(t => t.id === id ? { ...t, status: nextStatus } : t);
+          localStorage.setItem('studyflow-tasks-v6', JSON.stringify(updated));
+          db.ref(`tasks/${id}/status`).set(nextStatus);
+          return updated;
+        });
+      }, [soundEnabled]);
 
-      const togglePin = (id) => {
-        const newTasks = tasks.map(t => t.id === id ? { ...t, isPinned: !t.isPinned } : t);
-        syncToFirebase(newTasks);
-      };
+      const togglePin = useCallback((id) => {
+        setTasks(prev => {
+          const target = prev.find(t => t.id === id);
+          if (!target) return prev;
+          const nextPin = !target.isPinned;
+          const updated = prev.map(t => t.id === id ? { ...t, isPinned: nextPin } : t);
+          localStorage.setItem('studyflow-tasks-v6', JSON.stringify(updated));
+          db.ref(`tasks/${id}/isPinned`).set(nextPin);
+          return updated;
+        });
+      }, []);
 
-      const saveTask = (task) => {
+      const saveTask = useCallback((task) => {
         if (task.id) {
-          syncToFirebase(tasks.map(t => t.id === task.id ? { ...t, ...task } : t));
-          addToast('Изменения сохранены');
+          setTasks(prev => {
+            const updated = prev.map(t => t.id === task.id ? { ...t, ...task } : t);
+            const cleanItem = JSON.parse(JSON.stringify(updated.find(t => t.id === task.id)));
+            localStorage.setItem('studyflow-tasks-v6', JSON.stringify(updated));
+            db.ref(`tasks/${task.id}`).set(cleanItem);
+            return updated;
+          });
+          addToast('Задача обновлена');
         } else {
-          const newTask = { 
+          const newTask = JSON.parse(JSON.stringify({ 
             ...task, 
             id: generateId(), 
             createdAt: getTodayStr(), 
             status: 'active',
+            parentId: task.parentId || null,
             isPinned: Boolean(task.isPinned)
-          };
-          syncToFirebase([...tasks, newTask]);
+          }));
+          setTasks(prev => {
+            const updated = [...prev, newTask];
+            localStorage.setItem('studyflow-tasks-v6', JSON.stringify(updated));
+            db.ref(`tasks/${newTask.id}`).set(newTask);
+            return updated;
+          });
           addToast('Задача добавлена');
         }
-      };
+      }, [addToast]);
 
-      const deleteTask = (id) => {
-        const getChildrenIds = (parentId, allTasks) => {
-          const children = allTasks.filter(t => t.parentId === parentId);
-          return children.reduce((acc, child) => [...acc, child.id, ...getChildrenIds(child.id, allTasks)], []);
-        };
-        const idsToRemove = [id, ...getChildrenIds(id, tasks)];
-        const backupTasks = [...tasks];
-        const newTasks = tasks.filter(t => !idsToRemove.includes(t.id));
-        syncToFirebase(newTasks);
-        
-        addToast('Задача удалена', 'error', () => {
-          syncToFirebase(backupTasks);
-          addToast('Задача восстановлена!');
+      const deleteTask = useCallback((id) => {
+        setTasks(prev => {
+          const getChildrenIds = (parentId, allTasks) => {
+            const children = allTasks.filter(t => t.parentId === parentId);
+            return children.reduce((acc, child) => [...acc, child.id, ...getChildrenIds(child.id, allTasks)], []);
+          };
+          const idsToRemove = [id, ...getChildrenIds(id, prev)];
+          const backupTasks = [...prev];
+          const newTasks = prev.filter(t => !idsToRemove.includes(t.id));
+          
+          localStorage.setItem('studyflow-tasks-v6', JSON.stringify(newTasks));
+          const updates = {};
+          idsToRemove.forEach(remId => { updates[remId] = null; });
+          db.ref('tasks').update(updates);
+
+          addToast('Удалено', 'error', () => {
+            syncToFirebase(backupTasks);
+            addToast('Восстановлено!');
+          });
+          return newTasks;
         });
-      };
+      }, [addToast, syncToFirebase]);
+
+      const triggerExpandAll = (mode) => setExpandSignal(prev => ({ mode, tick: prev.tick + 1 }));
 
       return (
         <TaskContext.Provider value={{ 
           tasks, syncToFirebase, toggleComplete, togglePin, saveTask, deleteTask, 
-          isDark, setIsDark, soundEnabled, setSoundEnabled, addToast, isSyncing 
+          isDark, setIsDark, soundEnabled, setSoundEnabled, addToast, isSyncing,
+          expandSignal, triggerExpandAll,
+          pomoMode, pomoSeconds, pomoRunning, setPomoRunning, switchPomoMode, pomoTaskId, setPomoTaskId, pomoDurations
         }}>
           {children}
-          {/* Уведомления с поддержкой кнопки "Вернуть" */}
-          <div className="fixed top-5 right-5 z-[300] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0">
-            <AnimatePresence>
-              {toasts.map(toast => (
-                <motion.div 
-                  key={toast.id} 
-                  initial={{ opacity: 0, y: -20, scale: 0.92 }} 
-                  animate={{ opacity: 1, y: 0, scale: 1 }} 
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="pointer-events-auto px-4 py-3 rounded-2xl shadow-xl border backdrop-blur-xl text-sm font-bold flex items-center justify-between gap-3 bg-surface border-glassBorder text-textMain"
-                >
-                  <div className="flex items-center gap-2.5">
-                    {toast.type === 'error' ? <IconTrash /> : <IconCheckCircle />}
-                    <span>{toast.message}</span>
-                  </div>
-                  {toast.undoAction && (
-                    <button 
-                      onClick={() => { toast.undoAction(); setToasts(prev => prev.filter(t => t.id !== toast.id)); }}
-                      className="px-3 py-1 rounded-xl bg-primary text-btnText text-xs font-extrabold hover:opacity-90 transition-opacity"
-                    >
-                      Вернуть
-                    </button>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
+          {/* Уведомления */}
+          <div className="fixed top-4 right-4 z-[300] flex flex-col gap-2 max-w-xs w-full pointer-events-none">
+            {toasts.map(toast => (
+              <div 
+                key={toast.id} 
+                className="pointer-events-auto px-4 py-3 rounded-2xl shadow-xl border backdrop-blur-xl text-xs font-extrabold flex items-center justify-between gap-3 bg-surface border-glassBorder text-textMain transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  {toast.type === 'error' ? <IconTrash /> : <IconCheckCircle />}
+                  <span>{toast.message}</span>
+                </div>
+                {toast.undoAction && (
+                  <button 
+                    onClick={() => { toast.undoAction(); setToasts(prev => prev.filter(t => t.id !== toast.id)); }}
+                    className="px-2.5 py-1 rounded-xl bg-primary text-btnText text-[11px] font-extrabold hover:opacity-90"
+                  >
+                    Вернуть
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         </TaskContext.Provider>
       );
     };
 
-    // --- Карточка Задачи (Рекурсивное Дерево) ---
-    const TaskItem = ({ task, level = 0, onOpenModal }) => {
-      const { tasks, toggleComplete, togglePin, deleteTask } = useContext(TaskContext);
+    // --- Оптимизированная Карточка Задачи с Мгновенным Вводом Подзадач ---
+    const TaskItem = memo(({ task, level = 0, onOpenModal }) => {
+      const { tasks, toggleComplete, togglePin, saveTask, deleteTask, expandSignal, isDark } = useContext(TaskContext);
       const [isExpanded, setIsExpanded] = useState(true);
+      const [showInlineSub, setShowInlineSub] = useState(false);
+      const [inlineTitle, setInlineTitle] = useState('');
+
+      useEffect(() => {
+        if (expandSignal.tick > 0) setIsExpanded(expandSignal.mode);
+      }, [expandSignal]);
       
       const children = useMemo(() => {
         return tasks
@@ -422,21 +503,42 @@
       const dateStatusStr = getRelativeDateStr(task.deadline);
       const isOverdue = task.deadline && task.deadline < getTodayStr() && !isCompleted;
 
+      const handleInlineSubSubmit = (e) => {
+        e.preventDefault();
+        if (!inlineTitle.trim()) return;
+        saveTask({
+          title: inlineTitle.trim(),
+          subject: task.subject || '',
+          description: '',
+          link: '',
+          deadline: task.deadline || '',
+          priority: 'normal',
+          color: task.color || (isDark ? '#9fc792' : '#2d5225'),
+          parentId: task.id
+        });
+        setInlineTitle('');
+        setIsExpanded(true);
+      };
+
       return (
         <div className="w-full">
-          <div className={`group flex flex-col p-3 rounded-2xl transition-all duration-200 hover:bg-primary/10 border ${task.isPinned && !isCompleted ? 'border-primary/40 bg-primary/5' : 'border-transparent hover:border-glassBorder'} ${isCompleted ? 'opacity-60' : 'opacity-100'}`}>
-            
+          <div 
+            className={`task-card group relative flex flex-col p-3 sm:px-3.5 sm:py-2.5 overflow-hidden ${task.isPinned && !isCompleted ? 'ring-1 ring-primary/50' : ''} ${isCompleted ? 'opacity-60' : ''}`}
+            style={{ borderLeft: `4px solid ${task.color || 'var(--primary-color)'}` }}
+          >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                <button 
-                  onClick={() => setIsExpanded(!isExpanded)} 
-                  className={`p-1 mt-0.5 rounded-lg hover:bg-primary/20 transition-colors ${children.length === 0 ? 'invisible' : ''}`}
-                  title={isExpanded ? "Свернуть ветку" : "Развернуть ветку"}
-                >
-                  <motion.div animate={{ rotate: isExpanded ? 90 : 0 }}>
-                    <IconChevronRight className="text-textMuted" />
-                  </motion.div>
-                </button>
+                {children.length > 0 ? (
+                  <button 
+                    onClick={() => setIsExpanded(!isExpanded)} 
+                    className="p-1 mt-0.5 rounded-lg hover:bg-inputBg transition-colors text-textMuted"
+                    title={isExpanded ? "Свернуть подзадачи" : "Развернуть подзадачи"}
+                  >
+                    <IconChevronRight className={`transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+                  </button>
+                ) : (
+                  <div className="w-6 flex-shrink-0" />
+                )}
                 
                 <button 
                   onClick={() => toggleComplete(task.id)} 
@@ -445,19 +547,29 @@
                   {isCompleted ? <IconCheckCircle /> : <IconCircle />}
                 </button>
                 
-                <div className="flex-1 flex flex-col cursor-pointer min-w-0" onClick={() => children.length > 0 && setIsExpanded(!isExpanded)}>
+                <div className="flex-1 flex flex-col min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 border border-glassBorder" style={{ backgroundColor: task.color || 'var(--primary-color)' }} />
-                    <span className={`text-[15px] font-bold break-words ${isCompleted ? 'line-through text-textMuted' : 'text-textMain'}`}>
+                    <span 
+                      onClick={() => children.length > 0 && setIsExpanded(!isExpanded)}
+                      className={`text-[14.5px] font-bold break-words cursor-pointer ${isCompleted ? 'line-through text-textMuted' : 'text-textMain'}`}
+                    >
                       {task.title}
                     </span>
+
                     {progress !== null && (
-                      <span className="text-[11px] bg-primary/20 px-2 py-0.5 rounded-full text-textMain font-extrabold">
-                        {completedChildrenCount}/{children.length} ({progress}%)
+                      <span className="text-[11px] bg-inputBg border border-glassBorder px-2 py-0.5 rounded-full text-textMain font-extrabold">
+                        {completedChildrenCount}/{children.length} • {progress}%
                       </span>
                     )}
+
                     {!isCompleted && task.priority && task.priority !== 'normal' && (
-                      <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-md ${task.priority === 'urgent' ? 'bg-red-500/15 text-red-600 dark:text-red-400' : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'}`}>
+                      <span className={`text-[10.5px] font-extrabold px-2 py-0.5 rounded-md ${
+                        task.priority === 'urgent' 
+                          ? 'bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/30' 
+                          : task.priority === 'high'
+                            ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
+                            : 'bg-inputBg text-textMuted'
+                      }`}>
                         {priorityLabels[task.priority]}
                       </span>
                     )}
@@ -469,61 +581,61 @@
                     </p>
                   )}
                   
-                  <div className="flex gap-2 mt-2 text-xs text-textMuted items-center flex-wrap">
-                    {task.subject && (
-                      <span className="bg-inputBg px-2.5 py-0.5 rounded-lg border border-glassBorder font-bold text-textMain">
-                        {task.subject}
-                      </span>
-                    )}
-                    {task.deadline && (
-                      <span className={`flex items-center gap-1 bg-inputBg px-2.5 py-0.5 rounded-lg border border-glassBorder font-bold ${isOverdue ? 'text-red-600 dark:text-red-400 border-red-500/40 bg-red-500/10' : 'text-textMain'}`}>
-                        <IconClock /> {dateStatusStr}
-                      </span>
-                    )}
-                    {task.link && (
-                      <a 
-                        href={task.link.startsWith('http') ? task.link : `https://${task.link}`} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        onClick={e => e.stopPropagation()}
-                        className="flex items-center gap-1 bg-primary/15 hover:bg-primary/25 text-textMain px-2.5 py-0.5 rounded-lg font-bold transition-colors"
-                      >
-                        <IconLink /> Ссылка
-                      </a>
-                    )}
-                    {/* Умная подсказка при завершении всех подзадач */}
-                    {allChildrenDone && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleComplete(task.id); }}
-                        className="bg-primary text-btnText px-2.5 py-0.5 rounded-lg font-extrabold text-[11px] shadow-sm hover:opacity-90 transition-all animate-pulse"
-                      >
-                        ✨ Все шаги готовы! Завершить?
-                      </button>
-                    )}
-                  </div>
+                  {(task.subject || task.deadline || task.link || allChildrenDone) && (
+                    <div className="flex gap-1.5 mt-1.5 text-[11px] text-textMuted items-center flex-wrap">
+                      {task.subject && (
+                        <span className="bg-inputBg px-2 py-0.5 rounded-md font-bold text-textMain">
+                          {task.subject}
+                        </span>
+                      )}
+                      {task.deadline && (
+                        <span className={`flex items-center gap-1 px-2 py-0.5 rounded-md font-bold ${isOverdue ? 'bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/30' : 'bg-inputBg text-textMain'}`}>
+                          <IconClock size={12} /> {dateStatusStr}
+                        </span>
+                      )}
+                      {task.link && (
+                        <a 
+                          href={task.link.startsWith('http') ? task.link : `https://${task.link}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="flex items-center gap-1 bg-primary/15 hover:bg-primary/25 text-textMain px-2 py-0.5 rounded-md font-bold transition-colors"
+                        >
+                          <IconLink /> Ссылка
+                        </a>
+                      )}
+                      {allChildrenDone && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleComplete(task.id); }}
+                          className="bg-primary text-btnText px-2.5 py-0.5 rounded-md font-extrabold text-[11px] shadow-sm hover:opacity-90 transition-all"
+                        >
+                          ✨ Все шаги готовы — завершить?
+                        </button>
+                      )}
+                    </div>
+                  )}
 
-                  {/* Мини прогресс-бар подзадач */}
                   {progress !== null && !isCompleted && (
-                    <div className="w-full max-w-xs h-1.5 bg-inputBg rounded-full overflow-hidden mt-2 border border-glassBorder">
+                    <div className="w-full max-w-[220px] h-1.5 bg-inputBg rounded-full overflow-hidden mt-2">
                       <div className="h-full bg-primary transition-all duration-300 rounded-full" style={{ width: `${progress}%` }} />
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Панель действий карточки */}
-              <div className="flex items-center gap-1.5 mt-2 sm:mt-0 ml-11 sm:ml-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+              {/* Быстрые действия */}
+              <div className="flex items-center gap-1 mt-1.5 sm:mt-0 ml-8 sm:ml-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                 <button 
-                  onClick={() => onOpenModal({ parentId: task.id, date: task.deadline || '' })} 
-                  className="flex items-center gap-1 px-2.5 py-1.5 bg-primary/15 hover:bg-primary/25 rounded-xl text-textMain transition-colors text-xs font-bold"
-                  title="Добавить вложенную подзадачу"
+                  onClick={() => setShowInlineSub(!showInlineSub)} 
+                  className="flex items-center gap-1 px-2.5 py-1 bg-inputBg hover:bg-primary hover:text-btnText rounded-lg text-textMain transition-colors text-[11px] font-extrabold"
+                  title="Быстро добавить подзадачу"
                 >
-                  <IconPlus /> Подзадача
+                  <IconPlus size={13} /> Шаг
                 </button>
                 {!task.parentId && (
                   <button 
                     onClick={() => togglePin(task.id)} 
-                    className={`p-1.5 rounded-xl transition-colors ${task.isPinned ? 'bg-primary text-btnText' : 'hover:bg-primary/20 text-textMuted hover:text-textMain'}`} 
+                    className={`p-1.5 rounded-lg transition-colors ${task.isPinned ? 'bg-primary text-btnText' : 'hover:bg-inputBg text-textMuted hover:text-textMain'}`} 
                     title={task.isPinned ? "Открепить" : "Закрепить наверху"}
                   >
                     <IconPin active={task.isPinned} />
@@ -531,44 +643,61 @@
                 )}
                 <button 
                   onClick={() => onOpenModal({ editTask: task })} 
-                  className="p-1.5 hover:bg-primary/20 rounded-xl text-textMuted hover:text-textMain transition-colors" 
+                  className="p-1.5 hover:bg-inputBg rounded-lg text-textMuted hover:text-textMain transition-colors" 
                   title="Редактировать"
                 >
                   <IconEdit />
                 </button>
                 <button 
                   onClick={() => deleteTask(task.id)} 
-                  className="p-1.5 hover:bg-red-500/20 rounded-xl text-textMuted hover:text-red-600 transition-colors" 
+                  className="p-1.5 hover:bg-red-500/20 rounded-lg text-textMuted hover:text-red-600 transition-colors" 
                   title="Удалить"
                 >
                   <IconTrash />
                 </button>
               </div>
             </div>
+
+            {/* Мгновенное поле добавления подзадачи прямо внутри карточки */}
+            {showInlineSub && (
+              <form onSubmit={handleInlineSubSubmit} className="mt-2.5 ml-8 flex items-center gap-1.5 bg-inputBg p-1.5 rounded-xl border border-glassBorder">
+                <input 
+                  value={inlineTitle}
+                  onChange={e => setInlineTitle(e.target.value)}
+                  autoFocus
+                  placeholder="Название подзадачи (Enter — добавить)..."
+                  className="flex-1 bg-transparent px-2 py-1 text-xs font-bold text-textMain placeholder-textMuted/70 outline-none"
+                />
+                <button type="submit" className="px-2.5 py-1 bg-primary text-btnText rounded-lg text-[11px] font-extrabold">
+                  Добавить
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => { setShowInlineSub(false); onOpenModal({ parentId: task.id, date: task.deadline || '' }); }}
+                  className="px-2 py-1 bg-surface text-textMuted hover:text-textMain rounded-lg text-[11px] font-bold"
+                >
+                  Расширенно
+                </button>
+                <button type="button" onClick={() => setShowInlineSub(false)} className="p-1 text-textMuted hover:text-textMain">
+                  <IconClose />
+                </button>
+              </form>
+            )}
           </div>
 
-          {/* Вложенные подзадачи с визуальной линией дерева */}
-          <AnimatePresence>
-            {isExpanded && children.length > 0 && (
-              <motion.div 
-                initial={{ height: 0, opacity: 0 }} 
-                animate={{ height: 'auto', opacity: 1 }} 
-                exit={{ height: 0, opacity: 0 }} 
-                className="overflow-hidden"
-              >
-                <div className="ml-5 sm:ml-7 pl-3 border-l-2 border-primary/30 flex flex-col gap-1 mt-1 mb-2">
-                  {children.map(child => (
-                    <TaskItem key={child.id} task={child} level={level + 1} onOpenModal={onOpenModal} />
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Дерево подзадач */}
+          {isExpanded && children.length > 0 && (
+            <div className="ml-4 sm:ml-6 pl-3 border-l-2 border-primary/30 flex flex-col gap-1.5 mt-1.5 mb-2">
+              {children.map(child => (
+                <TaskItem key={child.id} task={child} level={level + 1} onOpenModal={onOpenModal} />
+              ))}
+            </div>
+          )}
         </div>
       );
-    };
+    });
 
-    // --- Модальный Мини-Календарь выбора дедлайна (В отдельном окне без наслоения) ---
+    // --- Модальный Мини-Календарь для выбора дедлайна ---
     const MiniDatePickerModal = ({ isOpen, selectedDate, onSelectDate, onClose }) => {
       const [pickerMonth, setPickerMonth] = useState(() => {
         const d = selectedDate ? new Date(selectedDate) : new Date();
@@ -593,22 +722,19 @@
 
       return (
         <div className="fixed inset-0 z-[260] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }} 
-            animate={{ scale: 1, opacity: 1 }} 
+          <div 
             className="bg-surface border-2 border-glassBorder p-5 rounded-3xl shadow-2xl w-full max-w-[330px] text-textMain"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-3">
-              <span className="font-extrabold text-base">Выбор дедлайна</span>
+              <span className="font-extrabold text-base">Дата дедлайна</span>
               <button type="button" onClick={onClose} className="p-1.5 text-textMuted hover:text-textMain bg-inputBg rounded-xl"><IconClose /></button>
             </div>
 
-            {/* Быстрые кнопки дат */}
             <div className="grid grid-cols-3 gap-1.5 mb-3">
-              <button type="button" onClick={() => onSelectDate(getTodayStr())} className="py-1.5 px-2 rounded-xl bg-inputBg hover:bg-primary hover:text-btnText text-xs font-bold transition-colors">Сегодня</button>
-              <button type="button" onClick={() => onSelectDate(getOffsetDateStr(1))} className="py-1.5 px-2 rounded-xl bg-inputBg hover:bg-primary hover:text-btnText text-xs font-bold transition-colors">Завтра</button>
-              <button type="button" onClick={() => onSelectDate(getOffsetDateStr(7))} className="py-1.5 px-2 rounded-xl bg-inputBg hover:bg-primary hover:text-btnText text-xs font-bold transition-colors">+1 Неделя</button>
+              <button type="button" onClick={() => onSelectDate(getTodayStr())} className="py-1.5 px-2 rounded-xl bg-inputBg hover:bg-primary hover:text-btnText text-xs font-extrabold transition-colors">Сегодня</button>
+              <button type="button" onClick={() => onSelectDate(getOffsetDateStr(1))} className="py-1.5 px-2 rounded-xl bg-inputBg hover:bg-primary hover:text-btnText text-xs font-extrabold transition-colors">Завтра</button>
+              <button type="button" onClick={() => onSelectDate(getOffsetDateStr(7))} className="py-1.5 px-2 rounded-xl bg-inputBg hover:bg-primary hover:text-btnText text-xs font-extrabold transition-colors">+7 дней</button>
             </div>
 
             <div className="flex items-center justify-between mb-3 bg-inputBg p-2 rounded-xl border border-glassBorder">
@@ -632,7 +758,7 @@
                 return (
                   <button
                     key={day} type="button" onClick={() => onSelectDate(dateStr)}
-                    className={`h-9 w-9 text-xs rounded-xl flex items-center justify-center font-bold transition-all mx-auto ${
+                    className={`h-9 w-9 text-xs rounded-xl flex items-center justify-center font-extrabold transition-all mx-auto ${
                       isSelected 
                         ? 'bg-primary text-btnText shadow-md scale-105' 
                         : isToday
@@ -646,12 +772,10 @@
               })}
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-glassBorder">
-              <button type="button" onClick={() => onSelectDate('')} className="text-textMuted font-bold hover:text-textMain px-3 py-1.5 bg-inputBg rounded-xl transition-colors text-xs w-full">
-                Убрать дедлайн
-              </button>
-            </div>
-          </motion.div>
+            <button type="button" onClick={() => onSelectDate('')} className="text-textMuted font-extrabold hover:text-textMain py-2 bg-inputBg rounded-xl transition-colors text-xs w-full">
+              Без дедлайна
+            </button>
+          </div>
         </div>
       );
     };
@@ -680,22 +804,22 @@
           {allColors.map(c => (
             <button 
               key={c} type="button" onClick={() => onChange(c)}
-              className={`w-7 h-7 rounded-full border-2 transition-transform shadow-sm ${value === c ? 'border-textMain scale-115 ring-2 ring-primary/40' : 'border-transparent hover:scale-110'}`}
+              className={`w-7 h-7 rounded-full border-2 transition-transform shadow-sm ${value === c ? 'border-textMain scale-110 ring-2 ring-primary/40' : 'border-transparent hover:scale-110'}`}
               style={{ backgroundColor: c }}
             />
           ))}
           <label 
             title="Выбрать свой цвет (сохранится в список)"
-            className="relative w-7 h-7 rounded-full border-2 border-dashed border-textMuted flex items-center justify-center overflow-hidden hover:border-textMain text-textMain cursor-pointer transition-colors bg-surface font-bold"
+            className="relative w-7 h-7 rounded-full border-2 border-dashed border-textMuted flex items-center justify-center overflow-hidden hover:border-textMain text-textMain cursor-pointer transition-colors bg-surface font-extrabold"
           >
             <span className="text-sm leading-none">+</span>
-            <input type="color" className="opacity-0 absolute inset-0 w-full h-full cursor-pointer" onChange={handleCustomAdd} value={value || '#35572c'} />
+            <input type="color" className="opacity-0 absolute inset-0 w-full h-full cursor-pointer" onChange={handleCustomAdd} value={value || '#2d5225'} />
           </label>
         </div>
       );
     };
 
-    // --- Модальное Окно Задачи (В едином стиле Matcha/Forest без серых полей) ---
+    // --- Модальное Окно Задачи ---
     const TaskModal = ({ isOpen, onClose, config }) => {
       const { tasks, saveTask, isDark } = useContext(TaskContext);
       const [showDatePicker, setShowDatePicker] = useState(false);
@@ -706,7 +830,7 @@
 
       useEffect(() => {
         if (isOpen) {
-          const defaultColor = isDark ? '#9fc792' : '#35572c';
+          const defaultColor = isDark ? '#9fc792' : '#2d5225';
           setShowDatePicker(false);
           if (config.editTask) {
             setFormData({ 
@@ -733,7 +857,6 @@
         onClose();
       };
 
-      // Защита от зацикливания и построение полного пути для всех задач и подзадач
       const getDescendants = (taskId, allTasks) => {
         const children = allTasks.filter(t => t.parentId === taskId);
         return children.reduce((acc, child) => [...acc, child.id, ...getDescendants(child.id, allTasks)], []);
@@ -752,18 +875,20 @@
         .map(p => ({ ...p, path: getPath(p, tasks) }))
         .sort((a, b) => a.path.localeCompare(b.path));
 
+      // Подсказки уже используемых предметов
+      const existingSubjects = [...new Set(tasks.map(t => t.subject).filter(Boolean))];
+
       return (
-        <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-md">
-          <motion.div 
-            initial={{ y: '100%' }} 
-            animate={{ y: 0 }} 
-            className="glass-panel w-full sm:max-w-xl p-6 bg-surface shadow-2xl rounded-t-3xl sm:rounded-3xl pb-10 sm:pb-6 max-h-[92vh] overflow-y-auto no-scrollbar border-2 border-glassBorder text-textMain"
+        <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-md" onClick={onClose}>
+          <div 
+            className="bento-card w-full sm:max-w-xl p-6 bg-surface shadow-2xl rounded-t-3xl sm:rounded-3xl pb-10 sm:pb-6 max-h-[92vh] overflow-y-auto no-scrollbar border-2 border-glassBorder text-textMain"
+            onClick={e => e.stopPropagation()}
           >
             <div className="w-12 h-1.5 bg-primary/40 rounded-full mx-auto mb-5 sm:hidden"></div>
             
             <div className="flex justify-between items-center mb-5">
               <h2 className="text-xl font-extrabold tracking-tight text-textMain">
-                {formData.id ? 'Редактировать задание' : (formData.parentId ? 'Новая подзадача' : 'Новое задание')}
+                {formData.id ? 'Редактировать задачу' : (formData.parentId ? 'Новая подзадача' : 'Новая задача')}
               </h2>
               <button type="button" onClick={onClose} className="p-2 rounded-xl text-textMuted hover:text-textMain bg-inputBg hover:bg-primary/20 transition-colors">
                 <IconClose />
@@ -779,19 +904,23 @@
                   required 
                   autoFocus 
                   className="w-full bg-transparent text-textMain placeholder-textMuted/60 outline-none font-bold text-base mt-0.5" 
-                  placeholder="Например: Подготовить доклад по истории" 
+                  placeholder="Что нужно сделать?" 
                 />
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="bg-inputBg border border-glassBorder rounded-2xl px-4 py-2 focus-within:border-primary transition-colors">
-                  <label className="text-[10px] uppercase text-textMuted font-extrabold">Предмет / Категория</label>
+                  <label className="text-[10px] uppercase text-textMuted font-extrabold">Предмет / Проект</label>
                   <input 
+                    list="subject-suggestions"
                     value={formData.subject} 
                     onChange={e => setFormData({...formData, subject: e.target.value})} 
                     className="w-full bg-transparent text-textMain placeholder-textMuted/60 outline-none text-sm font-bold mt-0.5" 
-                    placeholder="Математика, Проект..." 
+                    placeholder="Математика, Работа..." 
                   />
+                  <datalist id="subject-suggestions">
+                    {existingSubjects.map(s => <option key={s} value={s} />)}
+                  </datalist>
                 </div>
                 <div className="bg-inputBg border border-glassBorder rounded-2xl px-4 py-2 focus-within:border-primary transition-colors">
                   <label className="text-[10px] uppercase text-textMuted font-extrabold">Ссылка (по желанию)</label>
@@ -799,7 +928,7 @@
                     value={formData.link} 
                     onChange={e => setFormData({...formData, link: e.target.value})} 
                     className="w-full bg-transparent text-textMain placeholder-textMuted/60 outline-none text-sm font-bold mt-0.5" 
-                    placeholder="https://docs.google.com/..." 
+                    placeholder="https://..." 
                   />
                 </div>
               </div>
@@ -811,7 +940,7 @@
                   onChange={e => setFormData({...formData, description: e.target.value})} 
                   rows="2" 
                   className="w-full bg-transparent text-textMain placeholder-textMuted/60 outline-none text-sm font-medium resize-none mt-0.5" 
-                  placeholder="Детали задания, страницы учебника, важные мысли..." 
+                  placeholder="Детали, заметки или чек-лист..." 
                 />
               </div>
               
@@ -820,7 +949,7 @@
                   onClick={() => setShowDatePicker(true)}
                   className="bg-inputBg border border-glassBorder rounded-2xl px-4 py-2.5 flex flex-col cursor-pointer hover:border-primary transition-colors"
                 >
-                  <label className="text-[10px] uppercase text-textMuted font-extrabold cursor-pointer">Дедлайн (Календарь)</label>
+                  <label className="text-[10px] uppercase text-textMuted font-extrabold cursor-pointer">Дедлайн</label>
                   <div className="text-sm font-extrabold mt-1 flex items-center gap-1.5 text-textMain truncate">
                     <IconClock /> {formData.deadline ? getRelativeDateStr(formData.deadline) : 'Выбрать дату'}
                   </div>
@@ -842,7 +971,7 @@
               </div>
 
               <div className="bg-inputBg border border-glassBorder rounded-2xl px-4 py-2.5 flex flex-col">
-                <label className="text-[10px] uppercase text-textMuted font-extrabold">Вложить в (Сделать подзадачей любой задачи или подзадачи)</label>
+                <label className="text-[10px] uppercase text-textMuted font-extrabold">Вложить в (Сделать подзадачей)</label>
                 <select 
                   value={formData.parentId} 
                   onChange={e => setFormData({...formData, parentId: e.target.value})} 
@@ -856,7 +985,7 @@
               </div>
 
               <div className="bg-inputBg border border-glassBorder rounded-2xl px-4 py-2.5 flex flex-col">
-                <label className="text-[10px] uppercase text-textMuted font-extrabold">Цвет метки (свой цвет сохраняется в список)</label>
+                <label className="text-[10px] uppercase text-textMuted font-extrabold">Цвет метки</label>
                 <ColorPickerField value={formData.color} onChange={(c) => setFormData({...formData, color: c})} />
               </div>
               
@@ -869,7 +998,7 @@
                 </button>
               </div>
             </form>
-          </motion.div>
+          </div>
 
           <MiniDatePickerModal 
             isOpen={showDatePicker} 
@@ -894,15 +1023,13 @@
 
       return (
         <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/50 backdrop-blur-md" onClick={onClose}>
-          <motion.div 
-            initial={{ scale: 0.92, opacity: 0 }} 
-            animate={{ scale: 1, opacity: 1 }} 
-            className="glass-panel w-full max-w-lg p-6 bg-surface shadow-2xl rounded-3xl max-h-[85vh] flex flex-col border-2 border-glassBorder text-textMain"
+          <div 
+            className="bento-card w-full max-w-lg p-6 bg-surface shadow-2xl rounded-3xl max-h-[85vh] flex flex-col border-2 border-glassBorder text-textMain"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center pb-3 border-b border-glassBorder mb-4">
               <div>
-                <span className="text-[11px] uppercase font-extrabold text-textMuted tracking-wider">Задачи на выбранный день</span>
+                <span className="text-[11px] uppercase font-extrabold text-textMuted tracking-wider">План на день</span>
                 <h3 className="text-xl font-extrabold text-textMain mt-0.5">{titleDate}</h3>
               </div>
               <button onClick={onClose} className="p-2 rounded-xl text-textMuted hover:text-textMain bg-inputBg hover:bg-primary/20 transition-colors"><IconClose /></button>
@@ -924,58 +1051,69 @@
               onClick={() => { onClose(); onOpenModal({ date }); }}
               className="w-full py-3 bg-primary hover:bg-primaryHover text-btnText rounded-2xl font-extrabold flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 text-sm"
             >
-              <IconPlus /> Добавить задачу или подзадачу на этот день
+              <IconPlus /> Добавить задачу на этот день
             </button>
-          </motion.div>
+          </div>
         </div>
       );
     };
 
-    // --- РАЗДЕЛ 1: ГЛАВНАЯ (ДАШБОРД) ---
-    const Dashboard = ({ onOpenModal }) => {
-      const { tasks, saveTask, isSyncing, isDark } = useContext(TaskContext);
+    // --- РАЗДЕЛ 1: ГЛАВНОЕ РАБОЧЕЕ ПРОСТРАНСТВО ---
+    const Dashboard = ({ onOpenModal, searchInputRef }) => {
+      const { tasks, saveTask, isSyncing, isDark, triggerExpandAll } = useContext(TaskContext);
       const [searchQuery, setSearchQuery] = useState('');
       const [filterMode, setFilterMode] = useState('all'); // 'all' | 'today' | 'urgent'
+      const [selectedSubject, setSelectedSubject] = useState('all');
+      const [layoutMode, setLayoutMode] = useState('tree'); // 'tree' | 'board'
       const [quickTitle, setQuickTitle] = useState('');
+      const [quickDateMode, setQuickDateMode] = useState('today'); // 'today' | 'tomorrow' | 'none'
       const todayStr = getTodayStr();
       
       const allRoot = useMemo(() => tasks.filter(t => !t.parentId), [tasks]);
+
+      // Все уникальные предметы для быстрых вкладок-фильтров
+      const subjectsList = useMemo(() => {
+        const set = new Set();
+        tasks.forEach(t => { if (t.subject && t.subject.trim()) set.add(t.subject.trim()); });
+        return Array.from(set);
+      }, [tasks]);
       
-      // Прогресс за сегодня (смотрит на все задачи и подзадачи с дедлайном Сегодня)
+      // Прогресс за сегодня (только задачи сегодняшнего дня, если их нет или все выполнены -> 100% Можно играть в SIMS)
       const todayTasks = useMemo(() => tasks.filter(t => t.deadline === todayStr), [tasks, todayStr]);
       const todayCompleted = useMemo(() => todayTasks.filter(t => t.status === 'completed').length, [todayTasks]);
       
       let progressToday = 100;
       let isSimsReady = true;
-      let subtitleText = 'На сегодня задач нет — день полностью свободен!';
+      let subtitleText = 'На сегодня задач нет — все дела закрыты!';
 
       if (todayTasks.length > 0) {
         progressToday = Math.round((todayCompleted / todayTasks.length) * 100);
         isSimsReady = progressToday === 100;
-        subtitleText = `Выполнено ${todayCompleted} из ${todayTasks.length} задач на сегодня`;
+        subtitleText = `Завершено ${todayCompleted} из ${todayTasks.length} задач на сегодня`;
       }
 
       const handleQuickAdd = (e) => {
         e.preventDefault();
         if (!quickTitle.trim()) return;
+        const targetDeadline = quickDateMode === 'today' ? todayStr : (quickDateMode === 'tomorrow' ? getOffsetDateStr(1) : '');
         saveTask({
           title: quickTitle.trim(),
-          subject: '',
+          subject: selectedSubject !== 'all' ? selectedSubject : '',
           description: '',
           link: '',
-          deadline: todayStr,
+          deadline: targetDeadline,
           priority: 'normal',
-          color: isDark ? '#9fc792' : '#35572c',
+          color: isDark ? '#9fc792' : '#2d5225',
           parentId: null
         });
         setQuickTitle('');
       };
 
-      // Сортировка: Закрепленные -> По срочности -> По дате дедлайна
       const activeRoot = useMemo(() => {
         return allRoot
           .filter(t => t.status === 'active')
           .filter(t => {
+            if (selectedSubject !== 'all' && t.subject !== selectedSubject) return false;
             if (filterMode === 'today') return t.deadline === todayStr;
             if (filterMode === 'urgent') return t.priority === 'urgent' || t.priority === 'high';
             return true;
@@ -997,113 +1135,189 @@
             const dateB = b.deadline || '9999-99-99';
             return dateA.localeCompare(dateB);
           });
-      }, [allRoot, filterMode, searchQuery, todayStr]);
+      }, [allRoot, filterMode, selectedSubject, searchQuery, todayStr]);
 
-      const completedRoot = useMemo(() => allRoot.filter(t => t.status === 'completed'), [allRoot]);
+      const completedRoot = useMemo(() => {
+        return allRoot
+          .filter(t => t.status === 'completed')
+          .filter(t => selectedSubject === 'all' || t.subject === selectedSubject);
+      }, [allRoot, selectedSubject]);
+
       const overdueCount = useMemo(() => tasks.filter(t => t.status === 'active' && t.deadline && t.deadline < todayStr).length, [tasks, todayStr]);
 
       return (
-        <div className="animate-fade-in pb-32 sm:pb-12 max-w-5xl mx-auto">
-          <header className="mb-6">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-textMain tracking-tight flex items-center gap-3">
-                Ваш план
-                {isSyncing && <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-inputBg text-textMuted flex items-center gap-1.5"><IconCloud /> Синхронизация...</span>}
-              </h1>
-              <div className="flex items-center gap-2 text-xs font-extrabold">
-                <span className="px-3 py-1.5 rounded-xl bg-surface border border-glassBorder">Активных: {tasks.filter(t => t.status === 'active').length}</span>
-                {overdueCount > 0 && <span className="px-3 py-1.5 rounded-xl bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30">Просрочено: {overdueCount}</span>}
+        <div className=" pb-32 sm:pb-12 max-w-6xl mx-auto">
+          {/* Верхний Bento-дашборд */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+            <div className="lg:col-span-2 bento-card p-5 flex flex-col justify-between gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-xl sm:text-2xl font-extrabold text-textMain tracking-tight">Прогресс за сегодня</h1>
+                    {isSimsReady && <IconPlumbob />}
+                    {isSyncing && <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-inputBg text-textMuted flex items-center gap-1"><IconCloud /> Облако</span>}
+                  </div>
+                  <p className="text-xs sm:text-sm font-bold text-textMuted mt-0.5">{subtitleText}</p>
+                </div>
+                <span className="px-3.5 py-1.5 rounded-2xl bg-primary text-btnText font-extrabold text-xs sm:text-sm shadow-sm">
+                  {isSimsReady ? '100% • Можно играть в SIMS 🎮' : `${progressToday}% выполнено`}
+                </span>
+              </div>
+
+              <div className="w-full h-3.5 bg-inputBg rounded-full overflow-hidden border border-glassBorder p-0.5">
+                <div 
+                  style={{ width: `${progressToday}%` }} 
+                  className="h-full bg-primary rounded-full relative overflow-hidden transition-all duration-500 shimmer-bar"
+                />
               </div>
             </div>
 
-            {/* Главная карточка прогресса за сегодня + Статус SIMS */}
-            <div className="glass-panel p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 bg-surface/90 border-2 border-glassBorder">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-extrabold text-textMain text-lg">Прогресс за сегодня</h3>
-                  {isSimsReady && <IconPlumbob />}
-                </div>
-                <p className="text-sm font-bold text-textMuted mt-0.5">{subtitleText}</p>
+            {/* Мини-сводка состояния */}
+            <div className="bento-card p-4 grid grid-cols-3 gap-2 items-center text-center">
+              <div className="bg-surface p-3 rounded-2xl border border-glassBorder">
+                <span className="text-xl sm:text-2xl font-extrabold text-textMain block">{tasks.filter(t => t.status === 'active').length}</span>
+                <span className="text-[11px] font-bold text-textMuted">Активных</span>
               </div>
-              <div className="w-full sm:w-3/5 flex flex-col gap-2">
-                <div className="w-full h-4 bg-inputBg rounded-full overflow-hidden border border-glassBorder p-0.5">
-                  <motion.div 
-                    initial={{ width: 0 }} 
-                    animate={{ width: `${progressToday}%` }} 
-                    className="h-full bg-primary rounded-full relative overflow-hidden transition-all duration-500 shimmer-bar"
-                  />
-                </div>
-                <div className="flex justify-between items-center text-xs font-extrabold">
-                  <span className="text-textMuted">Цель дня: 100%</span>
-                  <span className="text-primary text-sm">
-                    {isSimsReady ? '100% (Можно играть в SIMS 🎮)' : `${progressToday}%`}
-                  </span>
-                </div>
+              <div className={`p-3 rounded-2xl border ${overdueCount > 0 ? 'bg-red-500/15 border-red-500/30 text-red-700 dark:text-red-400' : 'bg-surface border-glassBorder text-textMain'}`}>
+                <span className="text-xl sm:text-2xl font-extrabold block">{overdueCount}</span>
+                <span className="text-[11px] font-bold opacity-80">Просрочено</span>
+              </div>
+              <div className="bg-surface p-3 rounded-2xl border border-glassBorder">
+                <span className="text-xl sm:text-2xl font-extrabold text-primary block">{tasks.filter(t => t.status === 'completed').length}</span>
+                <span className="text-[11px] font-bold text-textMuted">Готово</span>
               </div>
             </div>
-          </header>
+          </div>
 
-          {/* Быстрое создание задачи на сегодня в 1 клик */}
-          <form onSubmit={handleQuickAdd} className="glass-panel p-2 mb-6 bg-surface/80 flex items-center gap-2 border border-glassBorder">
+          {/* Панель быстрого ввода задачи */}
+          <form onSubmit={handleQuickAdd} className="bento-card p-2 mb-5 flex flex-wrap sm:flex-nowrap items-center gap-2">
             <input 
               value={quickTitle}
               onChange={e => setQuickTitle(e.target.value)}
-              placeholder="Быстрая задача на сегодня (нажмите Enter)..."
-              className="flex-1 bg-transparent px-3 py-2 text-sm font-bold text-textMain placeholder-textMuted/70 outline-none"
+              placeholder="Быстро добавить задачу (нажмите Enter)..."
+              className="flex-1 min-w-[200px] bg-transparent px-3 py-2 text-sm font-bold text-textMain placeholder-textMuted/70 outline-none"
             />
+            <div className="flex items-center gap-1 bg-inputBg p-1 rounded-xl border border-glassBorder text-[11px] font-extrabold">
+              <button type="button" onClick={() => setQuickDateMode('today')} className={`px-2.5 py-1 rounded-lg transition-colors ${quickDateMode === 'today' ? 'bg-primary text-btnText' : 'text-textMuted hover:text-textMain'}`}>Сегодня</button>
+              <button type="button" onClick={() => setQuickDateMode('tomorrow')} className={`px-2.5 py-1 rounded-lg transition-colors ${quickDateMode === 'tomorrow' ? 'bg-primary text-btnText' : 'text-textMuted hover:text-textMain'}`}>Завтра</button>
+              <button type="button" onClick={() => setQuickDateMode('none')} className={`px-2.5 py-1 rounded-lg transition-colors ${quickDateMode === 'none' ? 'bg-primary text-btnText' : 'text-textMuted hover:text-textMain'}`}>Без даты</button>
+            </div>
             <button 
               type="submit" 
               className="px-4 py-2 bg-inputBg hover:bg-primary hover:text-btnText text-textMain rounded-xl text-xs font-extrabold transition-colors shrink-0"
             >
-              Быстро +
+              Добавить
             </button>
             <button 
               type="button"
               onClick={() => onOpenModal({})} 
-              className="px-4 py-2 bg-primary hover:bg-primaryHover text-btnText rounded-xl text-xs font-extrabold transition-colors shadow-md shrink-0 flex items-center gap-1"
+              className="px-4 py-2 bg-primary hover:bg-primaryHover text-btnText rounded-xl text-xs font-extrabold transition-colors shadow-sm shrink-0 flex items-center gap-1"
             >
-              <IconPlus /> Подробно
+              <IconPlus size={14} /> Подробно
             </button>
           </form>
 
-          {/* Список активных заданий с фильтрами и поиском */}
-          <div className="glass-panel p-3 sm:p-4 mb-6 bg-surface/65 border border-glassBorder">
-            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pb-3 mb-3 border-b border-glassBorder">
-              <div className="flex items-center gap-1.5 bg-inputBg p-1 rounded-xl border border-glassBorder">
-                <button onClick={() => setFilterMode('all')} className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-colors ${filterMode === 'all' ? 'bg-primary text-btnText shadow-sm' : 'text-textMuted hover:text-textMain'}`}>Все ({allRoot.filter(t=>t.status==='active').length})</button>
-                <button onClick={() => setFilterMode('today')} className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-colors ${filterMode === 'today' ? 'bg-primary text-btnText shadow-sm' : 'text-textMuted hover:text-textMain'}`}>На сегодня</button>
-                <button onClick={() => setFilterMode('urgent')} className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-colors ${filterMode === 'urgent' ? 'bg-primary text-btnText shadow-sm' : 'text-textMuted hover:text-textMain'}`}>Важные 🔥</button>
+          {/* Быстрые вкладки по предметам/проектам */}
+          {subjectsList.length > 0 && (
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar mb-4 pb-1">
+              <button 
+                onClick={() => setSelectedSubject('all')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all ${selectedSubject === 'all' ? 'bg-primary text-btnText shadow-sm' : 'bg-surface/80 text-textMuted hover:text-textMain border border-glassBorder'}`}
+              >
+                Все категории
+              </button>
+              {subjectsList.map(subj => (
+                <button 
+                  key={subj}
+                  onClick={() => setSelectedSubject(subj)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all ${selectedSubject === subj ? 'bg-primary text-btnText shadow-sm' : 'bg-surface/80 text-textMuted hover:text-textMain border border-glassBorder'}`}
+                >
+                  {subj}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Основной контейнер задач */}
+          <div className="bento-card p-3 sm:p-5 mb-6">
+            <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3 pb-3.5 mb-4 border-b border-glassBorder">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1 bg-inputBg p-1 rounded-xl border border-glassBorder">
+                  <button onClick={() => setFilterMode('all')} className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-colors ${filterMode === 'all' ? 'bg-primary text-btnText shadow-sm' : 'text-textMuted hover:text-textMain'}`}>Все ({activeRoot.length})</button>
+                  <button onClick={() => setFilterMode('today')} className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-colors ${filterMode === 'today' ? 'bg-primary text-btnText shadow-sm' : 'text-textMuted hover:text-textMain'}`}>Сегодня</button>
+                  <button onClick={() => setFilterMode('urgent')} className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-colors ${filterMode === 'urgent' ? 'bg-primary text-btnText shadow-sm' : 'text-textMuted hover:text-textMain'}`}>Срочные 🔥</button>
+                </div>
+
+                {/* Переключатель Дерево / Доска */}
+                <div className="flex items-center gap-1 bg-inputBg p-1 rounded-xl border border-glassBorder">
+                  <button onClick={() => setLayoutMode('tree')} className={`px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition-colors ${layoutMode === 'tree' ? 'bg-surface text-textMain shadow-sm' : 'text-textMuted hover:text-textMain'}`}>Дерево</button>
+                  <button onClick={() => setLayoutMode('board')} className={`px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition-colors ${layoutMode === 'board' ? 'bg-surface text-textMain shadow-sm' : 'text-textMuted hover:text-textMain'}`}>Канбан</button>
+                </div>
+
+                {layoutMode === 'tree' && (
+                  <div className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-textMuted">
+                    <button onClick={() => triggerExpandAll(true)} className="px-2 py-1 hover:text-textMain hover:bg-inputBg rounded-lg">Развернуть все</button>
+                    <span>•</span>
+                    <button onClick={() => triggerExpandAll(false)} className="px-2 py-1 hover:text-textMain hover:bg-inputBg rounded-lg">Свернуть все</button>
+                  </div>
+                )}
               </div>
 
-              <div className="relative flex-1 sm:max-w-xs">
+              <div className="relative flex-1 md:max-w-xs">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-textMuted"><IconSearch /></span>
                 <input 
+                  ref={searchInputRef}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Поиск по задачам и предметам..."
+                  placeholder="Поиск (нажмите /)..."
                   className="w-full bg-inputBg border border-glassBorder rounded-xl pl-9 pr-3 py-1.5 text-xs font-bold text-textMain placeholder-textMuted/70 outline-none focus:border-primary"
                 />
               </div>
             </div>
             
-            <div className="space-y-1">
-              {activeRoot.length === 0 ? (
-                <div className="text-center text-textMuted py-12 font-bold">
-                  {searchQuery ? 'По вашему запросу ничего не найдено.' : 'Все актуальные задачи выполнены! Можно отдыхать ✨'}
-                </div>
-              ) : (
-                activeRoot.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)
-              )}
-            </div>
+            {layoutMode === 'tree' ? (
+              <div className="space-y-1.5">
+                {activeRoot.length === 0 ? (
+                  <div className="text-center text-textMuted py-12 font-bold">
+                    {searchQuery ? 'Ничего не найдено.' : 'Все задачи в этой категории выполнены! ✨'}
+                  </div>
+                ) : (
+                  activeRoot.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)
+                )}
+              </div>
+            ) : (
+              /* Канбан-доска по срокам */
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { title: 'Горит / Сегодня 🎯', list: activeRoot.filter(t => (t.deadline && t.deadline <= todayStr) || t.priority === 'urgent') },
+                  { title: 'Запланировано 📅', list: activeRoot.filter(t => t.deadline && t.deadline > todayStr && t.priority !== 'urgent') },
+                  { title: 'Без дедлайна 🌿', list: activeRoot.filter(t => !t.deadline && t.priority !== 'urgent') }
+                ].map((col, idx) => (
+                  <div key={idx} className="bg-inputBg/60 p-3 rounded-2xl border border-glassBorder flex flex-col gap-2">
+                    <div className="flex justify-between items-center px-1 pb-1 border-b border-glassBorder">
+                      <span className="text-xs font-extrabold text-textMain">{col.title}</span>
+                      <span className="text-[11px] font-extrabold bg-surface px-2 py-0.5 rounded-full">{col.list.length}</span>
+                    </div>
+                    <div className="space-y-2">
+                      {col.list.length === 0 ? (
+                        <p className="text-center text-xs text-textMuted py-6 font-bold">Пусто</p>
+                      ) : (
+                        col.list.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Выполненные задачи (с возможностью вернуть обратно) */}
+          {/* Выполненные задачи */}
           {completedRoot.length > 0 && (
-            <div className="glass-panel p-3 sm:p-4 bg-surface/40 border border-glassBorder">
-              <h3 className="text-xs font-extrabold text-textMuted uppercase tracking-wider mb-2 pl-2">
-                Выполненные ({completedRoot.length}) — нажмите на галочку, чтобы вернуть в работу
+            <div className="bento-card p-4 opacity-85 hover:opacity-100 transition-opacity">
+              <h3 className="text-xs font-extrabold text-textMuted uppercase tracking-wider mb-2.5 pl-1">
+                Выполненные ({completedRoot.length}) — нажмите на галочку, чтобы вернуть в активные
               </h3>
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1.5">
                 {completedRoot.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)}
               </div>
             </div>
@@ -1112,7 +1326,7 @@
       );
     };
 
-    // --- РАЗДЕЛ 2: ДЕДЛАЙНЫ (ВРЕМЕННАЯ ШКАЛА) ---
+    // --- РАЗДЕЛ 2: ДЕДЛАЙНЫ ---
     const DeadlinesView = ({ onOpenModal }) => {
       const { tasks } = useContext(TaskContext);
       const todayStr = getTodayStr();
@@ -1140,11 +1354,11 @@
       ];
 
       return (
-        <div className="animate-fade-in pb-32 sm:pb-12 max-w-5xl mx-auto">
+        <div className="pb-32 sm:pb-12 max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-textMain">Контроль дедлайнов</h1>
-              <p className="text-sm font-bold text-textMuted">Все активные задачи и подзадачи, распределённые по срокам</p>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-textMain">Таймлайн дедлайнов</h1>
+              <p className="text-sm font-bold text-textMuted">Все активные задачи и подзадачи по дате сдачи</p>
             </div>
             <button onClick={() => onOpenModal({})} className="bg-primary hover:bg-primaryHover text-btnText px-4 py-2.5 rounded-2xl text-xs font-extrabold shadow-md flex items-center gap-1.5">
               <IconPlus /> Новая задача
@@ -1153,12 +1367,12 @@
 
           <div className="space-y-4">
             {groups.map((g, idx) => g.items.length > 0 && (
-              <div key={idx} className="glass-panel p-4 bg-surface/70 border border-glassBorder">
-                <h3 className="text-sm font-extrabold text-textMain uppercase tracking-wider mb-3 pb-2 border-b border-glassBorder flex justify-between">
+              <div key={idx} className="bento-card p-4">
+                <h3 className="text-xs font-extrabold text-textMain uppercase tracking-wider mb-3 pb-2 border-b border-glassBorder flex justify-between">
                   <span>{g.title}</span>
                   <span className="bg-inputBg px-2.5 py-0.5 rounded-full text-xs">{g.items.length}</span>
                 </h3>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {g.items.map(task => <TaskItem key={task.id} task={task} onOpenModal={onOpenModal} />)}
                 </div>
               </div>
@@ -1168,7 +1382,7 @@
       );
     };
 
-    // --- РАЗДЕЛ 3: КАЛЕНДАРЬ (МЕСЯЦ И НЕДЕЛЯ С УЧЕТОМ ПОДЗАДАЧ) ---
+    // --- РАЗДЕЛ 3: КАЛЕНДАРЬ (МЕСЯЦ И НЕДЕЛЯ С ПРОГРЕССОМ И ПОДЗАДАЧАМИ) ---
     const CalendarView = ({ onOpenModal }) => {
       const { tasks } = useContext(TaskContext);
       const [viewMode, setViewMode] = useState('month'); 
@@ -1191,7 +1405,6 @@
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       });
 
-      // Учитывает и основные задачи, и подзадачи без дублирования
       const getTasksForDate = (dateStr) => {
         return tasks.filter(t => {
           if (t.deadline !== dateStr) return false;
@@ -1212,7 +1425,7 @@
       const titleWeek = `${new Date(weekDays[0]).getDate()} ${monthNames[new Date(weekDays[0]).getMonth()]} — ${new Date(weekDays[6]).getDate()} ${monthNames[new Date(weekDays[6]).getMonth()]}`;
 
       return (
-        <div className="animate-fade-in pb-32 sm:pb-10 h-full flex flex-col max-w-5xl mx-auto">
+        <div className="pb-32 sm:pb-10 h-full flex flex-col max-w-6xl mx-auto">
           <header className="mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div className="flex items-center justify-between w-full sm:w-auto gap-4">
               <h1 className="text-2xl font-extrabold text-textMain">Календарь</h1>
@@ -1230,9 +1443,9 @@
           </header>
 
           {viewMode === 'month' ? (
-            <div className="glass-panel flex-1 p-3 sm:p-5 flex flex-col bg-surface/65 border border-glassBorder animate-fade-in">
+            <div className="bento-card flex-1 p-3 sm:p-5 flex flex-col">
               <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[10px] sm:text-xs font-extrabold text-textMuted uppercase">
-                <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div className="text-red-500/80">Сб</div><div className="text-red-500/80">Вс</div>
+                <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div className="text-red-600/80">Сб</div><div className="text-red-600/80">Вс</div>
               </div>
               <div className="grid grid-cols-7 gap-1 sm:gap-2 flex-1 auto-rows-fr">
                 {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} className="rounded-2xl bg-inputBg/40 opacity-40"></div>)}
@@ -1246,7 +1459,7 @@
                     <div 
                       key={day} 
                       onClick={() => setViewDayDate(dateStr)} 
-                      className={`p-1.5 sm:p-2 rounded-2xl border flex flex-col gap-1 cursor-pointer transition-all ${isToday ? 'border-2 border-primary bg-primary/15 shadow-sm' : 'border-glassBorder bg-surface hover:border-primary/60 hover:bg-primary/10'}`}
+                      className={`p-1.5 sm:p-2 rounded-2xl border flex flex-col gap-1 cursor-pointer transition-all ${isToday ? 'border-2 border-primary bg-primary/15 shadow-sm' : 'border-glassBorder bg-surface hover:border-primary/60 hover:bg-surfaceHover'}`}
                     >
                       <div className="flex justify-between items-center px-1">
                         <span className={`text-xs sm:text-sm font-extrabold ${isToday ? 'text-primary' : 'text-textMain'}`}>{day}</span>
@@ -1258,7 +1471,7 @@
                       </div>
                       <div className="hidden sm:flex flex-col gap-1 overflow-y-auto no-scrollbar max-h-20 mt-0.5">
                         {dayTasks.map(t => (
-                          <div key={t.id} className={`text-[10px] px-1.5 py-0.5 rounded-lg flex items-center gap-1 truncate font-bold ${t.status === 'completed' ? 'opacity-50 line-through bg-inputBg' : 'bg-primary/20 text-textMain border border-primary/20'}`}>
+                          <div key={t.id} className={`text-[10px] px-1.5 py-0.5 rounded-lg flex items-center gap-1 truncate font-bold ${t.status === 'completed' ? 'opacity-50 line-through bg-inputBg' : 'bg-inputBg text-textMain border border-glassBorder'}`}>
                             {t.parentId && <span className="text-primary font-extrabold">└</span>} {t.title}
                           </div>
                         ))}
@@ -1269,38 +1482,38 @@
               </div>
             </div>
           ) : (
-            <div className="glass-panel flex-1 p-4 sm:p-6 flex flex-col overflow-y-auto bg-surface/65 border border-glassBorder animate-fade-in no-scrollbar">
+            <div className="bento-card flex-1 p-4 sm:p-6 flex flex-col overflow-y-auto no-scrollbar">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-5 p-4 bg-inputBg rounded-2xl border border-glassBorder">
                 <div>
                   <span className="font-extrabold text-textMain">Прогресс недели (включая подзадачи)</span>
-                  <p className="text-xs font-bold text-textMuted">Задач на неделе: {weekTasksAll.length}</p>
+                  <p className="text-xs font-bold text-textMuted">Всего задач на неделе: {weekTasksAll.length}</p>
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-1/2">
                   <div className="flex-1 h-3.5 bg-surface rounded-full overflow-hidden border border-glassBorder">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${weekProgress}%` }} className="h-full bg-primary rounded-full"></motion.div>
+                    <div style={{ width: `${weekProgress}%` }} className="h-full bg-primary rounded-full transition-all duration-500"></div>
                   </div>
                   <span className="text-sm font-extrabold text-primary">{weekProgress}%</span>
                 </div>
               </div>
 
               <div className="flex flex-col gap-3.5">
-                {weekDays.map((dateStr, i) => {
+                {weekDays.map((dateStr) => {
                   const dayTasks = getTasksForDate(dateStr);
                   const isToday = dateStr === getTodayStr();
                   const d = new Date(dateStr);
                   
                   return (
-                    <div key={dateStr} className={`p-4 rounded-2xl border ${isToday ? 'border-2 border-primary bg-primary/10 shadow-sm' : 'border-glassBorder bg-surface'} flex flex-col gap-2.5`}>
+                    <div key={dateStr} className={`p-4 rounded-2xl border ${isToday ? 'border-2 border-primary bg-surface shadow-sm' : 'border-glassBorder bg-surface/80'} flex flex-col gap-2.5`}>
                       <div className="flex justify-between items-center border-b border-glassBorder pb-2">
                         <h3 className={`font-extrabold ${isToday ? 'text-primary' : 'text-textMain'}`}>
                           {dayNames[d.getDay()]}, <span className="font-bold text-textMuted text-sm">{d.getDate()} {monthNames[d.getMonth()]}</span>
                         </h3>
-                        <button onClick={() => onOpenModal({ date: dateStr })} className="text-btnText bg-primary hover:bg-primaryHover px-2.5 py-1 rounded-xl text-xs font-extrabold transition-colors flex items-center gap-1">
-                          <IconPlus /> Добавить
+                        <button onClick={() => onOpenModal({ date: dateStr })} className="text-btnText bg-primary hover:bg-primaryHover px-3 py-1 rounded-xl text-xs font-extrabold transition-colors flex items-center gap-1">
+                          <IconPlus size={14} /> Добавить
                         </button>
                       </div>
-                      <div className="flex flex-col gap-1">
-                        {dayTasks.length === 0 ? <p className="text-xs text-textMuted font-bold py-1">Нет задач на этот день</p> : dayTasks.map(t => <TaskItem key={t.id} task={t} onOpenModal={onOpenModal} />)}
+                      <div className="flex flex-col gap-1.5">
+                        {dayTasks.length === 0 ? <p className="text-xs text-textMuted font-bold py-1">Свободный день</p> : dayTasks.map(t => <TaskItem key={t.id} task={t} onOpenModal={onOpenModal} />)}
                       </div>
                     </div>
                   );
@@ -1319,52 +1532,28 @@
       );
     };
 
-    // --- РАЗДЕЛ 4: ТАЙМЕР ФОКУСА (POMODORO + ВЫБОР ЗАДАЧИ) ---
+    // --- РАЗДЕЛ 4: ФОКУС-ТАЙМЕР ---
     const FocusView = ({ onOpenModal }) => {
-      const { tasks, soundEnabled } = useContext(TaskContext);
-      const [mode, setMode] = useState('work'); // 'work' (25) | 'short' (5) | 'long' (15)
-      const [secondsLeft, setSecondsLeft] = useState(25 * 60);
-      const [isRunning, setIsRunning] = useState(false);
-      const [selectedTaskId, setSelectedTaskId] = useState('');
+      const { 
+        tasks, pomoMode, pomoSeconds, pomoRunning, setPomoRunning, 
+        switchPomoMode, pomoTaskId, setPomoTaskId, pomoDurations 
+      } = useContext(TaskContext);
 
-      const durations = { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
-
-      useEffect(() => {
-        if (!isRunning) return;
-        const timer = setInterval(() => {
-          setSecondsLeft(prev => {
-            if (prev <= 1) {
-              setIsRunning(false);
-              if (soundEnabled) playChime('timer');
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-        return () => clearInterval(timer);
-      }, [isRunning, soundEnabled]);
-
-      const switchMode = (newMode) => {
-        setIsRunning(false);
-        setMode(newMode);
-        setSecondsLeft(durations[newMode]);
-      };
-
-      const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
-      const secs = String(secondsLeft % 60).padStart(2, '0');
+      const mins = String(Math.floor(pomoSeconds / 60)).padStart(2, '0');
+      const secs = String(pomoSeconds % 60).padStart(2, '0');
       const activeTasks = tasks.filter(t => t.status === 'active' && !t.parentId);
-      const focusedTask = tasks.find(t => t.id === selectedTaskId);
+      const focusedTask = tasks.find(t => t.id === pomoTaskId);
 
       return (
-        <div className="animate-fade-in pb-32 sm:pb-12 max-w-3xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-textMain mb-2">Режим Фокуса</h1>
-          <p className="text-sm font-bold text-textMuted mb-6">Таймер Помодоро для глубокой концентрации без выгорания</p>
+        <div className="pb-32 sm:pb-12 max-w-3xl mx-auto">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-textMain mb-1">Режим Фокуса</h1>
+          <p className="text-sm font-bold text-textMuted mb-6">Таймер продолжает идти в мини-окне, даже если ты переключишься на задачи</p>
 
-          <div className="glass-panel p-6 sm:p-8 bg-surface/80 border-2 border-glassBorder text-center mb-6">
+          <div className="bento-card p-6 sm:p-8 text-center mb-6">
             <div className="inline-flex bg-inputBg p-1.5 rounded-2xl border border-glassBorder mb-6 gap-1">
-              <button onClick={() => switchMode('work')} className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-colors ${mode === 'work' ? 'bg-primary text-btnText' : 'text-textMuted hover:text-textMain'}`}>Фокус (25 мин)</button>
-              <button onClick={() => switchMode('short')} className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-colors ${mode === 'short' ? 'bg-primary text-btnText' : 'text-textMuted hover:text-textMain'}`}>Перерыв (5 мин)</button>
-              <button onClick={() => switchMode('long')} className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-colors ${mode === 'long' ? 'bg-primary text-btnText' : 'text-textMuted hover:text-textMain'}`}>Отдых (15 мин)</button>
+              <button onClick={() => switchPomoMode('work')} className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-colors ${pomoMode === 'work' ? 'bg-primary text-btnText' : 'text-textMuted hover:text-textMain'}`}>Работа (25 мин)</button>
+              <button onClick={() => switchPomoMode('short')} className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-colors ${pomoMode === 'short' ? 'bg-primary text-btnText' : 'text-textMuted hover:text-textMain'}`}>Перерыв (5 мин)</button>
+              <button onClick={() => switchPomoMode('long')} className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-colors ${pomoMode === 'long' ? 'bg-primary text-btnText' : 'text-textMuted hover:text-textMain'}`}>Отдых (15 мин)</button>
             </div>
 
             <div className="text-6xl sm:text-7xl font-extrabold tracking-tight text-textMain my-4 font-mono">
@@ -1373,13 +1562,13 @@
 
             <div className="flex justify-center gap-3 mt-6">
               <button 
-                onClick={() => setIsRunning(!isRunning)} 
+                onClick={() => setPomoRunning(!pomoRunning)} 
                 className="px-8 py-3 bg-primary hover:bg-primaryHover text-btnText rounded-2xl font-extrabold text-sm shadow-lg transition-transform active:scale-95"
               >
-                {isRunning ? 'Пауза' : 'Старт'}
+                {pomoRunning ? 'Пауза' : 'Старт'}
               </button>
               <button 
-                onClick={() => { setIsRunning(false); setSecondsLeft(durations[mode]); }} 
+                onClick={() => { setPomoRunning(false); switchPomoMode(pomoMode); }} 
                 className="px-5 py-3 bg-inputBg hover:bg-primary/20 text-textMain rounded-2xl font-extrabold text-sm border border-glassBorder transition-colors"
               >
                 Сброс
@@ -1387,19 +1576,19 @@
             </div>
           </div>
 
-          <div className="glass-panel p-5 bg-surface/70 border border-glassBorder">
-            <label className="text-xs uppercase font-extrabold text-textMuted block mb-2">Над какой задачей работаем сейчас?</label>
+          <div className="bento-card p-5">
+            <label className="text-xs uppercase font-extrabold text-textMuted block mb-2">Выбери текущую задачу для концентрации:</label>
             <select 
-              value={selectedTaskId} 
-              onChange={e => setSelectedTaskId(e.target.value)}
+              value={pomoTaskId} 
+              onChange={e => setPomoTaskId(e.target.value)}
               className="w-full bg-inputBg border border-glassBorder rounded-2xl px-4 py-3 text-sm font-extrabold text-textMain outline-none mb-4"
             >
-              <option value="" className="bg-surface text-textMain">— Выберите задачу из списка —</option>
+              <option value="" className="bg-surface text-textMain">— Не выбрано —</option>
               {activeTasks.map(t => <option key={t.id} value={t.id} className="bg-surface text-textMain">{t.title}</option>)}
             </select>
 
             {focusedTask && (
-              <div className="bg-inputBg/60 p-2 rounded-2xl border border-glassBorder">
+              <div className="mt-2">
                 <TaskItem task={focusedTask} onOpenModal={onOpenModal} />
               </div>
             )}
@@ -1408,7 +1597,7 @@
       );
     };
 
-    // --- РАЗДЕЛ 5: НАСТРОЙКИ И РЕЗЕРВНОЕ КОПИРОВАНИЕ ---
+    // --- РАЗДЕЛ 5: НАСТРОЙКИ ---
     const SettingsView = () => {
       const { tasks, syncToFirebase, isDark, setIsDark, soundEnabled, setSoundEnabled, addToast } = useContext(TaskContext);
       const fileInputRef = useRef(null);
@@ -1421,7 +1610,7 @@
         a.href = url;
         a.download = `studyflow-backup-${getTodayStr()}.json`;
         a.click();
-        addToast('Резервная копия скачана');
+        addToast('Резервная копия сохранена');
       };
 
       const handleImport = (e) => {
@@ -1433,36 +1622,36 @@
             const imported = JSON.parse(ev.target.result);
             if (Array.isArray(imported)) {
               syncToFirebase(imported);
-              addToast('База задач успешно импортирована!');
+              addToast('Задачи успешно импортированы!');
             }
           } catch (err) {
-            addToast('Ошибка чтения JSON файла', 'error');
+            addToast('Ошибка файла JSON', 'error');
           }
         };
         reader.readAsText(file);
       };
 
       return (
-        <div className="animate-fade-in pb-32 sm:pb-10 max-w-2xl mx-auto space-y-4">
+        <div className="pb-32 sm:pb-10 max-w-2xl mx-auto space-y-4">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-textMain mb-6">Настройки</h1>
           
-          <div className="glass-panel p-6 bg-surface/80 border border-glassBorder flex items-center justify-between">
+          <div className="bento-card p-5 flex items-center justify-between">
             <div>
               <h3 className="font-extrabold text-textMain text-base">Тема оформления</h3>
-              <p className="text-textMuted text-xs font-bold mt-1">Салатовая Matcha (светлая) или Deep Forest (тёмная)</p>
+              <p className="text-textMuted text-xs font-bold mt-1">Фирменная светлая салатовая или тёмная хвойная</p>
             </div>
             <button 
               onClick={() => setIsDark(!isDark)} 
-              className="px-4 py-3 bg-inputBg rounded-2xl border border-glassBorder shadow-sm hover:border-primary transition-colors text-textMain flex items-center gap-2 font-extrabold text-xs"
+              className="px-4 py-2.5 bg-inputBg rounded-2xl border border-glassBorder hover:border-primary transition-colors text-textMain flex items-center gap-2 font-extrabold text-xs"
             >
               {isDark ? <><IconSun /> Светлая</> : <><IconMoon /> Тёмная</>}
             </button>
           </div>
 
-          <div className="glass-panel p-6 bg-surface/80 border border-glassBorder flex items-center justify-between">
+          <div className="bento-card p-5 flex items-center justify-between">
             <div>
               <h3 className="font-extrabold text-textMain text-base">Звуковой отклик</h3>
-              <p className="text-textMuted text-xs font-bold mt-1">Приятный аккорд при выполнении задачи и окончании таймера</p>
+              <p className="text-textMuted text-xs font-bold mt-1">Мягкий аккорд при завершении задач и таймера</p>
             </div>
             <button 
               onClick={() => setSoundEnabled(!soundEnabled)} 
@@ -1472,17 +1661,17 @@
             </button>
           </div>
 
-          <div className="glass-panel p-6 bg-surface/80 border border-glassBorder space-y-4">
+          <div className="bento-card p-5 space-y-4">
             <div>
-              <h3 className="font-extrabold text-textMain text-base">Резервное копирование и Облако</h3>
-              <p className="text-textMuted text-xs font-bold mt-1">Все задачи автоматически синхронизируются с вашей базой Firebase. Вы также можете сохранить копию в файл.</p>
+              <h3 className="font-extrabold text-textMain text-base">Облако Firebase и Резервная копия</h3>
+              <p className="text-textMuted text-xs font-bold mt-1">Все прошлые и новые задачи автоматически синхронизируются с твоей базой Firebase и сохраняются в памяти браузера.</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button onClick={handleExport} className="px-4 py-2.5 bg-primary text-btnText rounded-2xl font-extrabold text-xs shadow-md hover:bg-primaryHover transition-colors">
-                Экспорт в JSON
+              <button onClick={handleExport} className="px-4 py-2.5 bg-primary text-btnText rounded-2xl font-extrabold text-xs shadow-sm hover:bg-primaryHover transition-colors">
+                Скачать копию (JSON)
               </button>
               <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2.5 bg-inputBg text-textMain border border-glassBorder rounded-2xl font-extrabold text-xs hover:bg-primary/20 transition-colors">
-                Импорт из JSON
+                Загрузить из JSON
               </button>
               <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
             </div>
@@ -1495,61 +1684,114 @@
     const App = () => {
       const [currentView, setCurrentView] = useState('dashboard');
       const [modalConfig, setModalConfig] = useState(null); 
+      const searchInputRef = useRef(null);
+      const { isDark, setIsDark, pomoRunning, pomoSeconds, setPomoRunning } = useContext(TaskContext);
       
       const navItems = [
-        { id: 'dashboard', icon: IconHome, label: 'Главная' }, 
-        { id: 'deadlines', icon: () => <IconClock size={20} />, label: 'Дедлайны' },
+        { id: 'dashboard', icon: IconHome, label: 'Задачи' }, 
+        { id: 'deadlines', icon: () => <IconClock size={19} />, label: 'Сроки' },
         { id: 'calendar', icon: IconCalendar, label: 'Календарь' }, 
         { id: 'focus', icon: IconTarget, label: 'Фокус' },
         { id: 'settings', icon: IconSettings, label: 'Настройки' }
       ];
 
+      // Горячие клавиши для быстрой работы: Alt+N (новая задача), / (поиск)
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (e.altKey && (e.key === 'n' || e.key === 'N' || e.key === 'т' || e.key === 'Т')) {
+            e.preventDefault();
+            setModalConfig({});
+          } else if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            setCurrentView('dashboard');
+            setTimeout(() => searchInputRef.current?.focus(), 50);
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, []);
+
+      const pomoMins = String(Math.floor(pomoSeconds / 60)).padStart(2, '0');
+      const pomoSecs = String(pomoSeconds % 60).padStart(2, '0');
+
       return (
         <div className="flex h-screen w-full relative">
-          {/* Боковая панель для компьютера */}
-          <aside className="hidden md:flex w-64 h-full border-r border-glassBorder bg-surface/85 backdrop-blur-2xl flex-col p-6 z-10 shadow-xl">
-            <div className="flex items-center gap-3 mb-10 text-textMain cursor-pointer" onClick={() => setCurrentView('dashboard')}>
-              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg"><span className="font-extrabold text-xl text-btnText">S</span></div>
-              <div>
-                <span className="text-xl font-extrabold tracking-tight block leading-none">StudyFlow</span>
-                <span className="text-[10px] font-bold text-textMuted uppercase tracking-widest">Cloud Planner</span>
+          {/* Боковая панель для ПК */}
+          <aside className="hidden md:flex w-64 h-full border-r border-glassBorder bg-surface/90 backdrop-blur-2xl flex-col p-5 z-10 shadow-xl">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3 text-textMain cursor-pointer" onClick={() => setCurrentView('dashboard')}>
+                <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-md">
+                  <span className="font-extrabold text-xl text-btnText">S</span>
+                </div>
+                <div>
+                  <span className="text-lg font-extrabold tracking-tight block leading-none">StudyFlow</span>
+                  <span className="text-[10px] font-extrabold text-textMuted uppercase tracking-widest">Workstation</span>
+                </div>
               </div>
+              <button 
+                onClick={() => setIsDark(!isDark)} 
+                className="p-2 rounded-xl bg-inputBg text-textMain hover:bg-primary hover:text-btnText transition-colors"
+                title="Переключить тему"
+              >
+                {isDark ? <IconSun /> : <IconMoon />}
+              </button>
             </div>
-            <nav className="flex flex-col gap-2 flex-1">
+
+            <nav className="flex flex-col gap-1.5 flex-1">
               {navItems.map(item => (
                 <button 
                   key={item.id} 
                   onClick={() => setCurrentView(item.id)} 
-                  className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all w-full text-left font-extrabold text-sm ${currentView === item.id ? 'bg-primary text-btnText shadow-md' : 'text-textMuted hover:bg-primary/15 hover:text-textMain'}`}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all w-full text-left font-extrabold text-xs sm:text-sm ${currentView === item.id ? 'bg-primary text-btnText shadow-md' : 'text-textMuted hover:bg-inputBg hover:text-textMain'}`}
                 >
                   <item.icon /> <span>{item.label}</span>
                 </button>
               ))}
             </nav>
-            <button 
-              onClick={() => setModalConfig({})}
-              className="w-full py-3.5 bg-primary hover:bg-primaryHover text-btnText rounded-2xl font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95"
-            >
-              <IconPlus /> Новая задача
-            </button>
+
+            <div className="space-y-2 pt-4 border-t border-glassBorder">
+              <button 
+                onClick={() => setModalConfig({})}
+                className="w-full py-3 bg-primary hover:bg-primaryHover text-btnText rounded-2xl font-extrabold text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-transform active:scale-95"
+              >
+                <IconPlus /> Новая задача
+              </button>
+              <p className="text-[10px] text-center font-bold text-textMuted">Быстрый вызов: Alt + N • Поиск: /</p>
+            </div>
           </aside>
 
-          {/* Нижняя навигация для телефона */}
+          {/* Нижняя панель для смартфона */}
           <nav className="md:hidden fixed bottom-0 left-0 w-full bg-surface/95 backdrop-blur-2xl border-t border-glassBorder flex justify-around items-center p-1.5 z-[90] shadow-2xl">
             {navItems.map(item => (
               <button 
                 key={item.id} 
                 onClick={() => setCurrentView(item.id)} 
-                className={`flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all ${currentView === item.id ? 'bg-primary text-btnText font-extrabold' : 'text-textMuted font-bold'}`}
+                className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl transition-all ${currentView === item.id ? 'bg-primary text-btnText font-extrabold' : 'text-textMuted font-bold'}`}
               >
                 <item.icon /> <span className="text-[10px]">{item.label}</span>
               </button>
             ))}
           </nav>
 
-          {/* Рабочая область */}
-          <main className="flex-1 h-full overflow-y-auto p-4 sm:p-8 relative no-scrollbar">
-            {currentView === 'dashboard' && <Dashboard onOpenModal={setModalConfig} />}
+          {/* Плавающий мини-таймер Помодоро (если таймер запущен, а мы на другой вкладке) */}
+          {(pomoRunning || pomoSeconds < 25 * 60) && currentView !== 'focus' && (
+            <div className="fixed bottom-20 md:bottom-6 right-5 z-[110] bento-card px-4 py-2.5 bg-surface border-2 border-primary shadow-xl flex items-center gap-3">
+              <button onClick={() => setCurrentView('focus')} className="text-left">
+                <span className="text-[10px] uppercase font-extrabold text-textMuted block">Таймер фокуса</span>
+                <span className="text-sm font-extrabold font-mono text-textMain">{pomoMins}:{pomoSecs}</span>
+              </button>
+              <button 
+                onClick={() => setPomoRunning(!pomoRunning)}
+                className="px-2.5 py-1 rounded-xl bg-primary text-btnText text-xs font-extrabold"
+              >
+                {pomoRunning ? 'Пауза' : 'Старт'}
+              </button>
+            </div>
+          )}
+
+          {/* Основная рабочая область */}
+          <main className="flex-1 h-full overflow-y-auto p-3.5 sm:p-7 relative no-scrollbar">
+            {currentView === 'dashboard' && <Dashboard onOpenModal={setModalConfig} searchInputRef={searchInputRef} />}
             {currentView === 'deadlines' && <DeadlinesView onOpenModal={setModalConfig} />}
             {currentView === 'calendar' && <CalendarView onOpenModal={setModalConfig} />}
             {currentView === 'focus' && <FocusView onOpenModal={setModalConfig} />}
